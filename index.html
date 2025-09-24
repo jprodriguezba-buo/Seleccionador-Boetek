@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de ACS</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="header">
+    <img id="logobtk" src="./Images/Boetek PNG.png">
+    <h1>Calculadora de ACS</h1>
+    </div>
+    <div class="main-container">
+        <form id="calculadora-form">
+            <h2>Ingreso de Departamentos</h2>
+            <table id="depto-table">
+                <thead>
+                    <tr>
+                        <th>Cant. De Dormitorios</th>
+                        <th>Pers / depto</th>
+                        <th>Unidades</th>
+                        <th>Total Personas</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1 dormitorio</td>
+                        <td>1,5</td>
+                        <td><input type="number" id="unidades-1" min="0"></td>
+                        <td class="total-personas-row" data-pers="1.5"></td>
+                    </tr>
+                    <tr>
+                        <td>2 dormitorios</td>
+                        <td>3</td>
+                        <td><input type="number" id="unidades-2" min="0"></td>
+                        <td class="total-personas-row" data-pers="3"></td>
+                    </tr>
+                    <tr>
+                        <td>3 dormitorios</td>
+                        <td>4</td>
+                        <td><input type="number" id="unidades-3" min="0"></td>
+                        <td class="total-personas-row" data-pers="4"></td>
+                    </tr>
+                    <tr>
+                        <td>4 dormitorios</td>
+                        <td>6</td>
+                        <td><input type="number" id="unidades-4" min="0"></td>
+                        <td class="total-personas-row" data-pers="6"></td>
+                    </tr>
+                    <tr>
+                        <td>5 dormitorios</td>
+                        <td>7</td>
+                        <td><input type="number" id="unidades-5" min="0"></td>
+                        <td class="total-personas-row" data-pers="7"></td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td id="total-unidades"></td>
+                        <td id="total-personas-general"></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="form-group">
+                <label for="demanda-guia">Guía de Demanda:</label>
+                <select id="demanda-guia" required>
+                    <option value="low">Baja</option>
+                    <option value="low-medium" selected>Baja-Media</option>
+                    <option value="medium">Media</option>
+                    <option value="high">Alta</option>
+                </select>
+            </div>
+
+            <h2>Parámetros del Sistema</h2>
+            <div class="form-group">
+                <label for="acumulacion-ingresada">Acumulación (Litros):</label>
+                <input type="number" id="acumulacion-ingresada" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="potencia-ingresada">Potencia Térmica (kW):</label>
+                <input type="number" id="potencia-ingresada" min="0" required>
+            </div>
+            
+            <div class="param-fijos">
+                <h3>Datos Fijos</h3>
+                <table>
+                    <tbody>
+                        <tr><td>Eficiencia</td><td>90%</td></tr>
+                        <tr><td>% uso acumulador</td><td>80%</td></tr>
+                        <tr><td>Temperatura agua fría</td><td>10°C</td></tr>
+                        <tr><td>Temperatura de acumulación</td><td>45°C</td></tr>
+                        <tr><td>Temperatura de consumo</td><td>50°C</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </form>
+
+        <div class="resultados-wrapper" id="resultados">
+            <div class="resultados-main">
+                <h3>Resultados de la Comparación</h3>
+                <table id="resultado-table">
+                    <thead>
+                        <tr>
+                            <th>Parámetro</th>
+                            <th>Valor Requerido (ASHRAE)</th>
+                            <th>Valor Ingresado</th>
+                            <th>Estado</th>
+                            <th class="boetek-col">Monitoreo (Boetek)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        </tbody>
+                </table>
+            </div>
+            <div class="produccion-continua-box">
+                <h4>Producción Continua ACS</h4>
+                <p>a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
+                <p>a 45°C: <span id="produccion-continua-45c"></span> L/min</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

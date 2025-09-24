@@ -1,0 +1,137 @@
+
+/*elimina flechas en input type number*/
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+.header{
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    
+}
+#logobtk{
+    aspect-ratio: auto;
+    width: 200px;
+    display: inline-block;
+}
+h1 {
+    text-align: center;
+    color: #333;
+}
+body {
+    font-family: Arial, sans-serif;
+    font-size: smaller;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    max-width: 1200px;
+}
+
+.main-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+#calculadora-form {
+    flex: 1;
+    min-width: 300px;
+}
+
+.resultados-wrapper {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    min-width: 400px;
+    padding: 15px;
+    background-color: #f0f8ff;
+    border: 1px solid #cce5ff;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 0px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="number"], select {
+    width: 50%;
+    padding: 1px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.param-fijos {
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+.param-fijos h3 {
+    margin-top: 0;
+}
+
+.status-ok {
+    color: green;
+    font-weight: bold;
+}
+
+.status-insuficiente {
+    color: red;
+    font-weight: bold;
+}
+
+/* Styles for continuous production box */
+.produccion-continua-box {
+    background-color: #e9ecef;
+    padding: 15px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.produccion-continua-box h4 {
+    margin-top: 0;
+    margin-bottom: 10px;
+}
+
+#produccion-continua {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #0056b3;
+}
+
+.boetek-col {
+  /*  background-color: #e8f5e9; /* Light green background for the new column */
+}
