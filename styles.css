@@ -29,10 +29,26 @@ body {
     padding-bottom: 10px;
     margin-bottom: 20px;
 }
+
+/* Contenedor para el logo y la versión */
+.logo-container {
+    display: flex;
+    align-items: flex-end; /* Alinea los items en la parte inferior */
+    gap: 10px; /* Espacio entre el logo y el texto */
+}
+
 #logobtk {
     width: 180px;
     height: auto;
 }
+
+.version-indicator {
+    font-size: 0.9em;
+    color: #6c757d; /* Un color gris sutil */
+    font-weight: bold;
+    padding-bottom: 5px; /* Ajuste para alinear con la base del logo */
+}
+
 h1, h2, h3, h4 {
     color: #333;
 }
@@ -150,18 +166,12 @@ input[type="number"], select {
     margin-bottom: 10px;
 }
 
-#produccion-continua {
-    font-size: 1.5em;
-    font-weight: bold;
-    color: #0056b3;
-}
 .monitoreo-col {
     background-color: #e8f5e9;
 }
 .monitoreo-insuficiente {
     background-color: #f8d7da;
 }
-
 
 /* Estilos para la sección de gráficos con pestañas */
 .chart-tabs {

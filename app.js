@@ -3,7 +3,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const form = document.getElementById('calculadora-form');
     const resultadosDiv = document.getElementById('resultados');
     const resultadoTableBody = document.querySelector('#resultado-table tbody');
-    const produccionContinua45cSpan = document.getElementById('produccion-continua-45c');
+    const produccionContinua50cSpan = document.getElementById('produccion-continua-50c');
+    const produccionContinuaTempSpan = document.getElementById('prod-continua-temp');
+    const produccionContinuaValorSpan = document.getElementById('produccion-continua-valor');
     const inputs = form.querySelectorAll('input[type="number"], select');
     const deptoInputs = document.querySelectorAll('#depto-table input[type="number"]');
     const totalUnidadesCell = document.getElementById('total-unidades');
@@ -29,9 +31,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     let barChartInstance = null;
     let monitoringData = [];
 
+    // Valores por defecto actualizados
     let params = {
         eficiencia: 0.90, usoAcumulador: 0.80, tempFria: 10,
-        tempAcumulacion: 60, tempConsumo: 45
+        tempAcumulacion: 50, tempConsumo: 50
     };
 
     const demandaData = {
@@ -51,16 +54,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Error al cargar datos_caudal.json:', error);
         alert('No se pudo cargar el perfil de consumo. Los gráficos no funcionarán.');
     }
-    
-    // --- FUNCIONES DE GRÁFICOS ---
 
-    /**
-     * Procesa los datos de monitoreo para agrupar el consumo total por hora.
-     * @returns {number[]} Un array con 24 valores, uno por cada hora.
-     */
+    // --- FUNCIONES DE GRÁFICOS ---
     const aggregateHourlyData = () => {
         if (!monitoringData.length) return new Array(24).fill(0);
-        
         const hourlyConsumption = new Array(24).fill(0);
         monitoringData.forEach(d => {
             const hour = new Date(d.created_at).getHours();
@@ -68,21 +65,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
         return hourlyConsumption;
     };
-    
-    /**
-     * Actualiza ambos gráficos (línea y barras) con los datos escalados.
-     * @param {number} totalPersonas - El número total de personas para la simulación.
-     */
+
     const updateCharts = (totalPersonas) => {
         if (!monitoringData.length) return;
-
         const personasBase = 769.5;
         const factor = totalPersonas > 0 ? totalPersonas / personasBase : 0;
 
-        // --- Gráfico de Líneas (Perfil Diario) ---
         const lineLabels = monitoringData.map(d => new Date(d.created_at).toTimeString().substring(0, 5));
         const lineScaledData = monitoringData.map(d => d["caudal L/min"] * factor);
-        
         if (lineChartInstance) lineChartInstance.destroy();
         lineChartInstance = new Chart(lineChartCanvas, {
             type: 'line',
@@ -97,11 +87,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 24 } }, y: { beginAtZero: true } } }
         });
 
-        // --- Gráfico de Barras (Consumo por Hora) ---
         const hourlyAggregatedData = aggregateHourlyData();
         const barLabels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
         const barScaledData = hourlyAggregatedData.map(d => d * factor);
-        
         if (barChartInstance) barChartInstance.destroy();
         barChartInstance = new Chart(barChartCanvas, {
             type: 'bar',
@@ -116,7 +104,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     };
-    
+
     // --- LÓGICA PRINCIPAL DE LA APP ---
     const updateTotals = () => {
         let totalUnidades = 0, totalPersonas = 0;
@@ -135,7 +123,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const updateComparison = () => {
         updateTotals();
-        
         const totalPersonas = parseFloat(totalPersonasGeneralCell.textContent) || 0;
         const demandaGuia = demandaGuiaSelect.value;
         const demanda = demandaData[demandaGuia];
@@ -143,6 +130,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const potenciaIngresada = parseFloat(potenciaIngresadaInput.value) || 0;
         const { eficiencia, usoAcumulador, tempFria, tempAcumulacion, tempConsumo } = params;
         const calorEspecificoAgua = 4.186, segundosEnUnDia = 24 * 3600;
+        
+        const tempConsumoFijaParaCalculo = 50;
 
         resultadoTableBody.innerHTML = '';
 
@@ -160,8 +149,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             resultadoTableBody.appendChild(row);
         };
 
-        const litrosPorMinuto_45c = (potenciaIngresada * eficiencia * 60) / (calorEspecificoAgua * (tempConsumo - tempFria));
-        produccionContinua45cSpan.textContent = litrosPorMinuto_45c.toFixed(2);
+        const litrosPorMinuto_50c = (potenciaIngresada * eficiencia * 60) / (calorEspecificoAgua * (50 - tempFria));
+        produccionContinua50cSpan.textContent = litrosPorMinuto_50c.toFixed(2);
+        
+        const litrosPorMinuto_seleccionado = (potenciaIngresada * eficiencia * 60) / (calorEspecificoAgua * (tempConsumo - tempFria));
+        produccionContinuaTempSpan.textContent = tempConsumo;
+        produccionContinuaValorSpan.textContent = litrosPorMinuto_seleccionado.toFixed(2);
         
         const peakTimes = { "Peak 5 min": "5min", "Peak 15 min": "15min", "Peak 30 min": "30min", "Peak 60 min": "60min", "Peak 120 min": "120min", "Peak 180 min": "180min", "Diario Promedio": "diarioAvg", "Diario Máximo": "diarioMax" };
         for (const [label, key] of Object.entries(peakTimes)) {
@@ -173,9 +166,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const tiempoSegundos = parseInt(key) * 60;
                 const energiaPotencia = potenciaIngresada * eficiencia * tiempoSegundos;
                 const energiaAcumulacion = (acumulacionIngresada * usoAcumulador) * calorEspecificoAgua * (tempAcumulacion - tempFria);
-                volumenProporcionado = (energiaPotencia + energiaAcumulacion) / (calorEspecificoAgua * (tempConsumo - tempFria));
+                volumenProporcionado = (energiaPotencia + energiaAcumulacion) / (calorEspecificoAgua * (tempConsumoFijaParaCalculo - tempFria));
             } else {
-                volumenProporcionado = (potenciaIngresada * eficiencia * segundosEnUnDia) / (calorEspecificoAgua * (tempConsumo - tempFria));
+                volumenProporcionado = (potenciaIngresada * eficiencia * segundosEnUnDia) / (calorEspecificoAgua * (tempConsumoFijaParaCalculo - tempFria));
             }
             createResultRow(label, volumenRequerido, volumenProporcionado, volumenBoetek);
         }
@@ -207,7 +200,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('edit-temp-fria').value = params.tempFria;
             document.getElementById('edit-temp-acumulacion').value = params.tempAcumulacion;
             document.getElementById('edit-temp-consumo').value = params.tempConsumo;
-
             viewMode.style.display = 'none';
             editMode.style.display = 'block';
         }
@@ -218,16 +210,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     saveBtn.addEventListener('click', () => toggleEditMode(true));
     inputs.forEach(input => input.addEventListener('input', updateComparison));
     tabLine.addEventListener('click', () => {
-        tabLine.classList.add('active');
-        tabBar.classList.remove('active');
-        lineChartContainer.style.display = 'block';
-        barChartContainer.style.display = 'none';
+        tabLine.classList.add('active'); tabBar.classList.remove('active');
+        lineChartContainer.style.display = 'block'; barChartContainer.style.display = 'none';
     });
     tabBar.addEventListener('click', () => {
-        tabBar.classList.add('active');
-        tabLine.classList.remove('active');
-        barChartContainer.style.display = 'block';
-        lineChartContainer.style.display = 'none';
+        tabBar.classList.add('active'); tabLine.classList.remove('active');
+        barChartContainer.style.display = 'block'; lineChartContainer.style.display = 'none';
     });
 
     // --- INICIALIZACIÓN ---
