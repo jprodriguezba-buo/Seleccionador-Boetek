@@ -5,14 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de ACS</title>
     <link rel="stylesheet" href="styles.css">
-    <!-- Se agrega la librería Chart.js para los gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.1</span>
+            <span class="version-indicator">v 1.2</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
@@ -101,8 +100,8 @@
                             <tr><td>Eficiencia</td><td id="view-eficiencia">90%</td></tr>
                             <tr><td>% uso acumulador</td><td id="view-uso-acumulador">80%</td></tr>
                             <tr><td>Temperatura agua fría</td><td id="view-temp-fria">10°C</td></tr>
-                            <tr><td>Temperatura de acumulación</td><td id="view-temp-acumulacion">50°C</td></tr>
-                            <tr><td>Temperatura de consumo</td><td id="view-temp-consumo">50°C</td></tr>
+                            <tr><td>Temperatura de acumulación</td><td id="view-temp-acumulacion">45°C</td></tr>
+                            <tr><td>Temperatura de consumo</td><td id="view-temp-consumo">45°C</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -124,11 +123,11 @@
                             </tr>
                             <tr>
                                 <td>Temperatura de acumulación</td>
-                                <td><input type="number" id="edit-temp-acumulacion" value="50" min="45" max="80"></td>
+                                <td><input type="number" id="edit-temp-acumulacion" value="45" min="45" max="80"></td>
                             </tr>
                             <tr>
                                 <td>Temperatura de consumo</td>
-                                <td><input type="number" id="edit-temp-consumo" value="50" min="40" max="60"></td>
+                                <td><input type="number" id="edit-temp-consumo" value="45" min="40" max="60"></td>
                             </tr>
                         </tbody>
                     </table>
@@ -152,12 +151,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <!-- Los resultados se insertan aquí dinámicamente -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
 
-            <!-- Contenedor para los gráficos con pestañas -->
             <div class="chart-section">
                 <div class="chart-tabs">
                     <button id="tab-line" class="active">Perfil Diario (L/min)</button>
@@ -174,7 +171,7 @@
             <div class="produccion-continua-box">
                 <h4>Caudales Instantáneos</h4>
                 <p>Caudal a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
-                <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">50</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
+                <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
             </div>
         </div>
     </div>

@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Valores por defecto actualizados
     let params = {
         eficiencia: 0.90, usoAcumulador: 0.80, tempFria: 10,
-        tempAcumulacion: 50, tempConsumo: 50
+        tempAcumulacion: 45, tempConsumo: 45
     };
 
     const demandaData = {
