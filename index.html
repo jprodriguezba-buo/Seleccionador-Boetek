@@ -11,7 +11,7 @@
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.3</span>
+            <span class="version-indicator">v 1.31</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
@@ -68,16 +68,6 @@
                 </tfoot>
             </table>
 
-            <div class="form-group">
-                <label for="demanda-guia">Guía de Demanda:</label>
-                <select id="demanda-guia" required>
-                    <option value="low">Baja</option>
-                    <option value="low-medium" selected>Baja-Media</option>
-                    <option value="medium">Media</option>
-                    <option value="high">Alta</option>
-                </select>
-            </div>
-
             <h2>Parámetros del Sistema</h2>
             <div class="form-group">
                 <label for="tipo-sistema">Tipo de Sistema:</label>
@@ -121,6 +111,7 @@
                 <div id="param-view-mode">
                     <table>
                         <tbody>
+                            <tr><td>Guía de Demanda</td><td id="view-demanda-guia">Baja-Media</td></tr>
                             <tr><td>Eficiencia</td><td id="view-eficiencia">90%</td></tr>
                             <tr><td>% uso acumulador</td><td id="view-uso-acumulador">80%</td></tr>
                             <tr><td>Temperatura agua fría</td><td id="view-temp-fria">10°C</td></tr>
@@ -135,6 +126,17 @@
                 <div id="param-edit-mode" style="display:none;">
                     <table>
                         <tbody>
+                            <tr>
+                                <td>Guía de Demanda</td>
+                                <td>
+                                    <select id="demanda-guia" required>
+                                        <option value="low">Baja</option>
+                                        <option value="low-medium">Baja-Media</option>
+                                        <option value="medium">Media</option>
+                                        <option value="high">Alta</option>
+                                    </select>
+                                </td>
+                            </tr>
                             <tr>
                                 <td>Eficiencia</td>
                                 <td><input type="number" id="edit-eficiencia" value="0.90" step="0.01" min="0.5" max="1.0"></td>

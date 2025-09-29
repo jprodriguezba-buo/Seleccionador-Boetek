@@ -1,3 +1,6 @@
 1.3
 - se agrega funcionalidades de bomba de calor y comparacion en caso de falla en la bomba de calor vs el monitoreo remoto.
 - se agrega funcionalidad de calculo consumo en hora punta segun tarifa electrica
+1.31
+- se deja por defecto valores hora punta 18:00 - 22:00
+- se desplaza demanda ashrae a seccion parametros fijos

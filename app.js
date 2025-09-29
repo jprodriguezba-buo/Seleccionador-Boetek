@@ -44,13 +44,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     let barChartInstance = null;
     let monitoringData = [];
     let params = {
+        demandaGuia: 'low-medium',
         eficiencia: 0.90, 
         usoAcumulador: 0.80, 
         tempFria: 10,
         tempAcumulacion: 45, 
         tempConsumo: 45,
-        horaPuntaInicio: 19,
-        horaPuntaFin: 21
+        horaPuntaInicio: 18,
+        horaPuntaFin: 22
+    };
+    const demandaGuiaMap = {
+        'low': 'Baja',
+        'low-medium': 'Baja-Media',
+        'medium': 'Media',
+        'high': 'Alta'
     };
     const demandaData = {
         low: { "5min": 1.5, "15min": 3.8, "30min": 6.4, "60min": 10.6, "120min": 17.0, "180min": 23.1, "diarioAvg": 53, "diarioMax": 76 },
@@ -118,7 +125,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         produccionContinuaValorSpan.textContent = litrosPorMinuto_seleccionado.toFixed(2);
         
         resultadoTableBody.innerHTML = '';
-        const demanda = demandaData[demandaGuiaSelect.value];
+        const demanda = demandaData[params.demandaGuia];
         const peakTimes = { "Peak 5 min": "5min", "Peak 15 min": "15min", "Peak 30 min": "30min", "Peak 60 min": "60min", "Peak 120 min": "120min", "Peak 180 min": "180min", "Diario Promedio": "diarioAvg", "Diario Máximo": "diarioMax" };
         
         for (const [label, key] of Object.entries(peakTimes)) {
@@ -202,6 +209,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (isSaving && isCurrentlyEditing) {
             params = {
+                demandaGuia: document.getElementById('demanda-guia').value,
                 eficiencia: parseFloat(document.getElementById('edit-eficiencia').value),
                 usoAcumulador: parseFloat(document.getElementById('edit-uso-acumulador').value),
                 tempFria: parseFloat(document.getElementById('edit-temp-fria').value),
@@ -210,6 +218,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 horaPuntaInicio: parseInt(document.getElementById('edit-hora-punta-inicio').value, 10),
                 horaPuntaFin: parseInt(document.getElementById('edit-hora-punta-fin').value, 10)
             };
+            
+            document.getElementById('view-demanda-guia').textContent = demandaGuiaMap[params.demandaGuia];
             document.getElementById('view-eficiencia').textContent = `${(params.eficiencia * 100).toFixed(0)}%`;
             document.getElementById('view-uso-acumulador').textContent = `${(params.usoAcumulador * 100).toFixed(0)}%`;
             document.getElementById('view-temp-fria').textContent = `${params.tempFria}°C`;
@@ -222,6 +232,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             editMode.style.display = 'none';
             updateComparison();
         } else if (!isCurrentlyEditing) {
+            document.getElementById('demanda-guia').value = params.demandaGuia;
             document.getElementById('edit-eficiencia').value = params.eficiencia;
             document.getElementById('edit-uso-acumulador').value = params.usoAcumulador;
             document.getElementById('edit-temp-fria').value = params.tempFria;
@@ -314,6 +325,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         
         const initializeApp = () => {
             const formatHour = (hour) => `${String(hour).padStart(2, '0')}:00`;
+            document.getElementById('view-demanda-guia').textContent = demandaGuiaMap[params.demandaGuia];
             document.getElementById('view-eficiencia').textContent = `${(params.eficiencia * 100).toFixed(0)}%`;
             document.getElementById('view-uso-acumulador').textContent = `${(params.usoAcumulador * 100).toFixed(0)}%`;
             document.getElementById('view-temp-fria').textContent = `${params.tempFria}°C`;
