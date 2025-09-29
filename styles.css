@@ -1,61 +1,78 @@
-
-/*elimina flechas en input type number*/
+/* Elimina flechas en input type number */
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 
-/* Firefox */
-input[type=number] {
-  -moz-appearance: textfield;
-}
-.header{
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    
-}
-#logobtk{
-    aspect-ratio: auto;
-    width: 200px;
-    display: inline-block;
-}
-h1 {
-    text-align: center;
-    color: #333;
-}
 body {
     font-family: Arial, sans-serif;
-    font-size: smaller;
+    font-size: 14px;
     margin: 20px auto;
     padding: 20px;
     border: 1px solid #ccc;
     border-radius: 8px;
     max-width: 1200px;
+    background-color: #f9f9f9;
 }
 
 .main-container {
     display: flex;
-    gap: 10px;
+    gap: 20px;
     flex-wrap: wrap;
+}
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #0056b3;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+#logobtk {
+    width: 180px;
+    height: auto;
+}
+h1, h2, h3, h4 {
+    color: #333;
+}
+h1 {
+    text-align: center;
+    color: #0056b3;
+    margin: 0;
+}
+h2 {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    margin-top: 0;
+}
+h3 {
+    margin-top: 0;
 }
 
 #calculadora-form {
     flex: 1;
-    min-width: 300px;
+    min-width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .resultados-wrapper {
     flex: 2;
     display: flex;
     flex-direction: column;
-    gap: 0;
-    min-width: 400px;
-    padding: 15px;
-    background-color: #f0f8ff;
-    border: 1px solid #cce5ff;
-    border-radius: 5px;
+    gap: 15px;
+    min-width: 500px;
+}
+
+.resultados-main, .produccion-continua-box, .chart-section {
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 table {
@@ -65,13 +82,17 @@ table {
 }
 
 th, td {
-    padding: 0px;
+    padding: 8px 4px;
     text-align: left;
     border-bottom: 1px solid #ddd;
 }
 
 th {
     background-color: #f2f2f2;
+    font-weight: bold;
+}
+#depto-table tfoot td {
+    font-weight: bold;
 }
 
 .form-group {
@@ -85,39 +106,42 @@ label {
 }
 
 input[type="number"], select {
-    width: 50%;
-    padding: 1px;
+    width: 100%;
+    padding: 8px;
     box-sizing: border-box;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
+#depto-table input[type="number"] {
+    width: 80%;
+    text-align: right;
+}
 
 .param-fijos {
     margin-bottom: 20px;
-    padding: 10px;
+    padding: 15px;
     background-color: #e9ecef;
     border-radius: 4px;
 }
 
-.param-fijos h3 {
-    margin-top: 0;
+.param-fijos .header{
+    border-bottom: none;
+    padding: 0;
+    margin: 0;
+    align-items: center;
 }
 
 .status-ok {
-    color: green;
+    color: #28a745;
     font-weight: bold;
 }
 
 .status-insuficiente {
-    color: red;
+    color: #dc3545;
     font-weight: bold;
 }
 
-/* Styles for continuous production box */
 .produccion-continua-box {
-    background-color: #e9ecef;
-    padding: 15px;
-    border-radius: 5px;
     text-align: center;
 }
 
@@ -131,7 +155,38 @@ input[type="number"], select {
     font-weight: bold;
     color: #0056b3;
 }
+.monitoreo-col {
+    background-color: #e8f5e9;
+}
+.monitoreo-insuficiente {
+    background-color: #f8d7da;
+}
 
-.boetek-col {
-  /*  background-color: #e8f5e9; /* Light green background for the new column */
+
+/* Estilos para la sección de gráficos con pestañas */
+.chart-tabs {
+    margin-bottom: 15px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.chart-tabs button {
+    background-color: transparent;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1em;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px; /* Alinea con el borde inferior del contenedor */
+    color: #0056b3;
+}
+
+.chart-tabs button.active {
+    border-color: #0056b3;
+    font-weight: bold;
+}
+
+.chart-container {
+    position: relative;
+    height: 350px;
+    width: 100%;
 }

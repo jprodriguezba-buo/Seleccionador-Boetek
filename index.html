@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculadora de ACS</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <div class="header">
-    <img id="logobtk" src="./Images/Boetek PNG.png">
-    <h1>Calculadora de ACS</h1>
+        <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
+        <h1>Calculadora de ACS</h1>
     </div>
     <div class="main-container">
         <form id="calculadora-form">
@@ -27,37 +28,37 @@
                     <tr>
                         <td>1 dormitorio</td>
                         <td>1,5</td>
-                        <td><input type="number" id="unidades-1" min="0"></td>
+                        <td><input type="number" id="unidades-1" min="0" value="0"></td>
                         <td class="total-personas-row" data-pers="1.5"></td>
                     </tr>
                     <tr>
                         <td>2 dormitorios</td>
                         <td>3</td>
-                        <td><input type="number" id="unidades-2" min="0"></td>
+                        <td><input type="number" id="unidades-2" min="0" value="0"></td>
                         <td class="total-personas-row" data-pers="3"></td>
                     </tr>
                     <tr>
                         <td>3 dormitorios</td>
                         <td>4</td>
-                        <td><input type="number" id="unidades-3" min="0"></td>
+                        <td><input type="number" id="unidades-3" min="0" value="0"></td>
                         <td class="total-personas-row" data-pers="4"></td>
                     </tr>
                     <tr>
                         <td>4 dormitorios</td>
                         <td>6</td>
-                        <td><input type="number" id="unidades-4" min="0"></td>
+                        <td><input type="number" id="unidades-4" min="0" value="0"></td>
                         <td class="total-personas-row" data-pers="6"></td>
                     </tr>
                     <tr>
                         <td>5 dormitorios</td>
                         <td>7</td>
-                        <td><input type="number" id="unidades-5" min="0"></td>
+                        <td><input type="number" id="unidades-5" min="0" value="0"></td>
                         <td class="total-personas-row" data-pers="7"></td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="2"></td>
+                        <td colspan="2"><strong>Total:</strong></td>
                         <td id="total-unidades"></td>
                         <td id="total-personas-general"></td>
                     </tr>
@@ -77,24 +78,58 @@
             <h2>Parámetros del Sistema</h2>
             <div class="form-group">
                 <label for="acumulacion-ingresada">Acumulación (Litros):</label>
-                <input type="number" id="acumulacion-ingresada" min="0" required>
+                <input type="number" id="acumulacion-ingresada" min="0" value="1000" required>
             </div>
             <div class="form-group">
                 <label for="potencia-ingresada">Potencia Térmica (kW):</label>
-                <input type="number" id="potencia-ingresada" min="0" required>
+                <input type="number" id="potencia-ingresada" min="0" value="50" required>
             </div>
             
             <div class="param-fijos">
-                <h3>Datos Fijos</h3>
-                <table>
-                    <tbody>
-                        <tr><td>Eficiencia</td><td>90%</td></tr>
-                        <tr><td>% uso acumulador</td><td>80%</td></tr>
-                        <tr><td>Temperatura agua fría</td><td>10°C</td></tr>
-                        <tr><td>Temperatura de acumulación</td><td>45°C</td></tr>
-                        <tr><td>Temperatura de consumo</td><td>50°C</td></tr>
-                    </tbody>
-                </table>
+                <div class="header">
+                    <h3>Datos Fijos</h3>
+                    <button type="button" id="edit-params-btn">Editar</button>
+                </div>
+                
+                <div id="param-view-mode">
+                    <table>
+                        <tbody>
+                            <tr><td>Eficiencia</td><td id="view-eficiencia">90%</td></tr>
+                            <tr><td>% uso acumulador</td><td id="view-uso-acumulador">80%</td></tr>
+                            <tr><td>Temperatura agua fría</td><td id="view-temp-fria">10°C</td></tr>
+                            <tr><td>Temperatura de acumulación</td><td id="view-temp-acumulacion">60°C</td></tr>
+                            <tr><td>Temperatura de consumo</td><td id="view-temp-consumo">45°C</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="param-edit-mode" style="display:none;">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>Eficiencia</td>
+                                <td><input type="number" id="edit-eficiencia" value="0.90" step="0.01" min="0.5" max="1.0"></td>
+                            </tr>
+                            <tr>
+                                <td>% uso acumulador</td>
+                                <td><input type="number" id="edit-uso-acumulador" value="0.80" step="0.01" min="0.1" max="1.0"></td>
+                            </tr>
+                            <tr>
+                                <td>Temperatura agua fría</td>
+                                <td><input type="number" id="edit-temp-fria" value="10" min="0" max="30"></td>
+                            </tr>
+                            <tr>
+                                <td>Temperatura de acumulación</td>
+                                <td><input type="number" id="edit-temp-acumulacion" value="60" min="45" max="80"></td>
+                            </tr>
+                            <tr>
+                                <td>Temperatura de consumo</td>
+                                <td><input type="number" id="edit-temp-consumo" value="45" min="40" max="60"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" id="save-params-btn">Guardar</button>
+                </div>
             </div>
         </form>
 
@@ -109,15 +144,29 @@
                             <th>Valor Ingresado</th>
                             <th>Estado</th>
                             <th class="boetek-col">Monitoreo (Boetek)</th>
+                            <th class="sobre-dimensionamiento-col">% Sobredimensionamiento</th>
                         </tr>
                     </thead>
                     <tbody>
                         </tbody>
                 </table>
             </div>
+
+            <div class="chart-section">
+                <div class="chart-tabs">
+                    <button id="tab-line" class="active">Perfil Diario (L/min)</button>
+                    <button id="tab-bar">Consumo por Hora (L)</button>
+                </div>
+                <div id="line-chart-container" class="chart-container">
+                    <canvas id="lineChart"></canvas>
+                </div>
+                <div id="bar-chart-container" class="chart-container" style="display: none;">
+                    <canvas id="barChart"></canvas>
+                </div>
+            </div>
+
             <div class="produccion-continua-box">
                 <h4>Producción Continua ACS</h4>
-                <p>a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
                 <p>a 45°C: <span id="produccion-continua-45c"></span> L/min</p>
             </div>
         </div>
