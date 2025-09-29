@@ -83,7 +83,7 @@ h3 {
     min-width: 500px;
 }
 
-.resultados-main, .produccion-continua-box, .chart-section {
+.resultados-main, .chart-section, .info-box {
     padding: 20px;
     background-color: white;
     border: 1px solid #ddd;
@@ -133,6 +133,11 @@ input[type="number"], select {
     text-align: right;
 }
 
+#param-edit-mode input[type="number"] {
+    width: 60px;
+    display: inline-block;
+}
+
 .param-fijos {
     margin-bottom: 20px;
     padding: 15px;
@@ -157,20 +162,17 @@ input[type="number"], select {
     font-weight: bold;
 }
 
-.produccion-continua-box {
-    text-align: center;
-}
-
-.produccion-continua-box h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-}
-
 .monitoreo-col {
     background-color: #e8f5e9;
 }
 .monitoreo-insuficiente {
     background-color: #f8d7da;
+}
+
+#potencia-bomba-calor-group p {
+    margin-top: 0;
+    font-size: 0.9em;
+    color: #333;
 }
 
 /* Estilos para la sección de gráficos con pestañas */
@@ -199,4 +201,77 @@ input[type="number"], select {
     position: relative;
     height: 350px;
     width: 100%;
+}
+
+/* Controla la visibilidad de la nueva columna de modo falla */
+.col-falla {
+    display: none; /* Oculta la columna por defecto */
+}
+
+/* Cuando la tabla tenga esta clase, la columna se mostrará */
+table.falla-re-active .col-falla {
+    display: table-cell;
+}
+
+
+/* --- INICIAN NUEVAS REGLAS PARA LA TABLA DE RESULTADOS --- */
+
+/* 1. Asigna un layout fijo a la tabla para controlar anchos */
+#resultado-table {
+    table-layout: fixed;
+}
+
+/* 2. Estilos base para todas las celdas de la tabla */
+#resultado-table th,
+#resultado-table td {
+    padding: 3px 6px;
+    font-size: 13px;
+    vertical-align: middle;
+    word-wrap: break-word; /* Ayuda a romper palabras largas si es necesario */
+}
+
+/* 3. Celdas del cuerpo (datos): una sola línea y con puntos suspensivos si se corta */
+#resultado-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 4. Alineación del texto */
+#resultado-table td:not(:first-child),
+#resultado-table th:not(:first-child) {
+    text-align: right;
+}
+
+#resultado-table th:nth-child(4), /* Columna Estado */
+#resultado-table td:nth-child(4),
+#resultado-table th:nth-child(6), /* Columna % Sobredimensionamiento */
+#resultado-table td:nth-child(6),
+#resultado-table th:nth-child(8), /* Columna Estado Falla */
+#resultado-table td:nth-child(8) {
+    text-align: center;
+}
+
+/* --- NUEVOS ESTILOS PARA TARJETAS DE INFO --- */
+.info-boxes-wrapper {
+    display: flex;
+    gap: 15px;
+}
+
+.info-box {
+    flex: 1;
+    text-align: center;
+}
+
+.info-box h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+.info-box p {
+    margin: 5px 0;
+    font-size: 1em;
+}
+
+.info-box span {
+    font-weight: bold;
 }

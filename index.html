@@ -11,7 +11,7 @@
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.2</span>
+            <span class="version-indicator">v 1.3</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
@@ -80,12 +80,36 @@
 
             <h2>Parámetros del Sistema</h2>
             <div class="form-group">
+                <label for="tipo-sistema">Tipo de Sistema:</label>
+                <select id="tipo-sistema" required>
+                    <option value="sala_calderas" selected>Sala de Calderas</option>
+                    <option value="apoyo_re">Bomba de calor con apoyo de R.E.</option>
+                    <option value="falla_re">Bomba de calor con RE en caso de falla</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="acumulacion-ingresada">Acumulación (Litros):</label>
                 <input type="number" id="acumulacion-ingresada" min="0" value="1000" required>
             </div>
-            <div class="form-group">
-                <label for="potencia-ingresada">Potencia Térmica (kW):</label>
-                <input type="number" id="potencia-ingresada" min="0" value="300" required>
+            
+            <div id="potencia-sala-calderas-group">
+                <div class="form-group">
+                    <label for="potencia-ingresada">Potencia Térmica (kW):</label>
+                    <input type="number" id="potencia-ingresada" min="0" value="300" required>
+                </div>
+            </div>
+
+            <div id="potencia-bomba-calor-group" style="display:none;">
+                <div class="form-group">
+                    <label for="potencia-bc">Potencia Bombas de Calor (kW):</label>
+                    <input type="number" id="potencia-bc" min="0" value="150">
+                </div>
+                <div class="form-group">
+                    <label for="potencia-re">Potencia Resistencias Eléctricas (kW):</label>
+                    <input type="number" id="potencia-re" min="0" value="150">
+                </div>
+                <p><strong>Potencia Térmica Total:</strong> <span id="potencia-total-display">300</span> kW</p>
             </div>
 
             <div class="param-fijos">
@@ -102,6 +126,8 @@
                             <tr><td>Temperatura agua fría</td><td id="view-temp-fria">10°C</td></tr>
                             <tr><td>Temperatura de acumulación</td><td id="view-temp-acumulacion">45°C</td></tr>
                             <tr><td>Temperatura de consumo</td><td id="view-temp-consumo">45°C</td></tr>
+                            <tr class="fila-hora-punta"><td>Hora Punta Inicio</td><td id="view-hora-punta-inicio">19:00</td></tr>
+                            <tr class="fila-hora-punta"><td>Hora Punta Fin</td><td id="view-hora-punta-fin">21:00</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -129,6 +155,14 @@
                                 <td>Temperatura de consumo</td>
                                 <td><input type="number" id="edit-temp-consumo" value="45" min="40" max="60"></td>
                             </tr>
+                            <tr class="fila-hora-punta">
+                                <td>Hora Punta Inicio</td>
+                                <td><input type="number" id="edit-hora-punta-inicio" value="19" min="0" max="23">:00</td>
+                            </tr>
+                            <tr class="fila-hora-punta">
+                                <td>Hora Punta Fin</td>
+                                <td><input type="number" id="edit-hora-punta-fin" value="21" min="0" max="23">:00</td>
+                            </tr>
                         </tbody>
                     </table>
                     <button type="button" id="save-params-btn">Guardar</button>
@@ -142,12 +176,14 @@
                 <table id="resultado-table">
                     <thead>
                         <tr>
-                            <th>Parámetro</th>
-                            <th>Valor Requerido (ASHRAE)</th>
-                            <th>Valor Ingresado</th>
-                            <th>Estado</th>
-                            <th class="boetek-col">Monitoreo (Boetek)</th>
-                            <th class="sobre-dimensionamiento-col">% Sobredimensionamiento</th>
+                            <th title="Parámetro de consumo de agua caliente">Parámetro</th>
+                            <th title="Volumen de agua requerido según la guía ASHRAE para el número de personas.">Requerido</th>
+                            <th title="Capacidad del sistema seleccionado para proveer el volumen de agua.">Seleccionado</th>
+                            <th title="Indica si el sistema seleccionado cumple con el requerimiento de ASHRAE.">Cumple</th>
+                            <th class="boetek-col" title="Consumo de referencia medido por Boetek en proyectos similares.">Monitoreo</th>
+                            <th class="sobre-dimensionamiento-col" title="Porcentaje en que el sistema seleccionado supera al consumo de monitoreo de Boetek.">Sobredimensionamiento</th>
+                            <th class="col-falla" title="Capacidad del sistema operando solo con resistencias eléctricas (modo falla).">Seleccionado en falla</th>
+                            <th class="col-falla" title="Indica si el sistema en modo falla cumple con el consumo de monitoreo de Boetek.">Cumple Falla</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -168,10 +204,17 @@
                 </div>
             </div>
 
-            <div class="produccion-continua-box">
-                <h4>Caudales Instantáneos</h4>
-                <p>Caudal a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
-                <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
+            <div class="info-boxes-wrapper">
+                <div class="info-box" id="consumo-punta-box">
+                    <h4>Horario Punta</h4>
+                    <p>Consumo: <span id="consumo-punta-valor"></span> L</p>
+                    <p>Generación: <span id="generacion-punta-valor"></span> L</p>
+                </div>
+                <div class="info-box" id="produccion-continua-box">
+                    <h4>Caudales Instantáneos</h4>
+                    <p>Caudal a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
+                    <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
+                </div>
             </div>
         </div>
     </div>
