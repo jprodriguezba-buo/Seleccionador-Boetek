@@ -4,3 +4,7 @@
 1.31
 - se deja por defecto valores hora punta 18:00 - 22:00
 - se desplaza demanda ashrae a seccion parametros fijos
+1.4
+- se incorpora pestaña con grafico consumo mensual
+- se mejoran graficos incorporando puntos de datos
+- se incorpora tarjeta de consumos anual

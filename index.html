@@ -6,12 +6,13 @@
     <title>Calculadora de ACS</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 </head>
 <body>
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.31</span>
+            <span class="version-indicator">v 1.4</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
@@ -112,6 +113,7 @@
                     <table>
                         <tbody>
                             <tr><td>Guía de Demanda</td><td id="view-demanda-guia">Baja-Media</td></tr>
+                            <tr><td>Prom. L/persona/día</td><td id="view-litros-persona-dia">60 L</td></tr>
                             <tr><td>Eficiencia</td><td id="view-eficiencia">90%</td></tr>
                             <tr><td>% uso acumulador</td><td id="view-uso-acumulador">80%</td></tr>
                             <tr><td>Temperatura agua fría</td><td id="view-temp-fria">10°C</td></tr>
@@ -136,6 +138,10 @@
                                         <option value="high">Alta</option>
                                     </select>
                                 </td>
+                            </tr>
+                            <tr>
+                                <td>Prom. L/persona/día</td>
+                                <td><input type="number" id="edit-litros-persona-dia" value="60" min="20" max="150"></td>
                             </tr>
                             <tr>
                                 <td>Eficiencia</td>
@@ -197,12 +203,16 @@
                 <div class="chart-tabs">
                     <button id="tab-line" class="active">Perfil Diario (L/min)</button>
                     <button id="tab-bar">Consumo por Hora (L)</button>
+                    <button id="tab-monthly">Consumo Mensual (m³)</button>
                 </div>
                 <div id="line-chart-container" class="chart-container">
                     <canvas id="lineChart"></canvas>
                 </div>
                 <div id="bar-chart-container" class="chart-container" style="display: none;">
                     <canvas id="barChart"></canvas>
+                </div>
+                <div id="monthly-chart-container" class="chart-container" style="display: none;">
+                    <canvas id="monthlyChart"></canvas>
                 </div>
             </div>
 
@@ -216,6 +226,10 @@
                     <h4>Caudales Instantáneos</h4>
                     <p>Caudal a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
                     <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
+                </div>
+                <div class="info-box" id="consumo-anual-box">
+                    <h4>Consumo Anual</h4>
+                    <p><span id="consumo-anual-valor">0</span> m³</p>
                 </div>
             </div>
         </div>

@@ -1,4 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
+    // REGISTRO GLOBAL DEL PLUGIN DE ETIQUETAS
+    Chart.register(ChartDataLabels);
+    // DESACTIVAMOS EL PLUGIN POR DEFECTO PARA TODOS LOS GRÁFICOS
+    Chart.defaults.plugins.datalabels.display = false;
+
     // --- ELEMENTOS DEL DOM ---
     const form = document.getElementById('calculadora-form');
     const produccionContinua50cSpan = document.getElementById('produccion-continua-50c');
@@ -30,21 +35,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     const consumoPuntaBox = document.getElementById('consumo-punta-box');
     const consumoPuntaValorSpan = document.getElementById('consumo-punta-valor');
     const generacionPuntaValorSpan = document.getElementById('generacion-punta-valor');
+    const consumoAnualValorSpan = document.getElementById('consumo-anual-valor');
     
     // Elementos de los gráficos
     const tabLine = document.getElementById('tab-line');
     const tabBar = document.getElementById('tab-bar');
+    const tabMonthly = document.getElementById('tab-monthly');
     const lineChartContainer = document.getElementById('line-chart-container');
     const barChartContainer = document.getElementById('bar-chart-container');
+    const monthlyChartContainer = document.getElementById('monthly-chart-container');
     const lineChartCanvas = document.getElementById('lineChart').getContext('2d');
     const barChartCanvas = document.getElementById('barChart').getContext('2d');
+    const monthlyChartCanvas = document.getElementById('monthlyChart').getContext('2d');
 
     // --- VARIABLES GLOBALES ---
     let lineChartInstance = null;
     let barChartInstance = null;
+    let monthlyChartInstance = null;
     let monitoringData = [];
     let params = {
         demandaGuia: 'low-medium',
+        litrosPersonaDia: 60,
         eficiencia: 0.90, 
         usoAcumulador: 0.80, 
         tempFria: 10,
@@ -65,6 +76,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         medium: { "5min": 2.6, "15min": 6.4, "30min": 11.0, "60min": 18.2, "120min": 30.3, "180min": 41.6, "diarioAvg": 114, "diarioMax": 185 },
         high: { "5min": 4.5, "15min": 11.4, "30min": 19.3, "60min": 32.2, "120min": 54.9, "180min": 71.9, "diarioAvg": 204, "diarioMax": 340 },
         monitoreo: { "5min": 1.85, "15min": 4.19, "30min": 5.66, "60min": 9.25, "120min": 14.50, "180min": 20.00, "diarioAvg": "N/A", "diarioMax": 67 }
+    };
+    const consumoMensualDistribucion = {
+        enero: 0.0682, febrero: 0.0603, marzo: 0.0778, abril: 0.0818,
+        mayo: 0.0899, junio: 0.0944, julio: 0.0972, agosto: 0.0931,
+        septiembre: 0.0923, octubre: 0.0896, noviembre: 0.0814, diciembre: 0.0740
     };
 
     // --- LÓGICA PRINCIPAL DE LA APP ---
@@ -210,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (isSaving && isCurrentlyEditing) {
             params = {
                 demandaGuia: document.getElementById('demanda-guia').value,
+                litrosPersonaDia: parseInt(document.getElementById('edit-litros-persona-dia').value, 10),
                 eficiencia: parseFloat(document.getElementById('edit-eficiencia').value),
                 usoAcumulador: parseFloat(document.getElementById('edit-uso-acumulador').value),
                 tempFria: parseFloat(document.getElementById('edit-temp-fria').value),
@@ -220,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             };
             
             document.getElementById('view-demanda-guia').textContent = demandaGuiaMap[params.demandaGuia];
+            document.getElementById('view-litros-persona-dia').textContent = `${params.litrosPersonaDia} L`;
             document.getElementById('view-eficiencia').textContent = `${(params.eficiencia * 100).toFixed(0)}%`;
             document.getElementById('view-uso-acumulador').textContent = `${(params.usoAcumulador * 100).toFixed(0)}%`;
             document.getElementById('view-temp-fria').textContent = `${params.tempFria}°C`;
@@ -233,6 +251,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateComparison();
         } else if (!isCurrentlyEditing) {
             document.getElementById('demanda-guia').value = params.demandaGuia;
+            document.getElementById('edit-litros-persona-dia').value = params.litrosPersonaDia;
             document.getElementById('edit-eficiencia').value = params.eficiencia;
             document.getElementById('edit-uso-acumulador').value = params.usoAcumulador;
             document.getElementById('edit-temp-fria').value = params.tempFria;
@@ -257,49 +276,154 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
     
     const updateCharts = (totalPersonas) => {
-        if (!monitoringData.length) return;
+        // ---- Gráfico Perfil Diario (L/min) y Consumo por Hora (L) ----
+        if (monitoringData.length > 0) {
+            const tipoSistema = tipoSistemaSelect.value;
+            const esBombaDeCalor = tipoSistema !== 'sala_calderas';
+            const personasBase = 769.5;
+            const factor = totalPersonas > 0 ? totalPersonas / personasBase : 0;
+            
+            const lineLabels = monitoringData.map(d => new Date(d.created_at).toTimeString().substring(0, 5));
+            const lineScaledData = monitoringData.map(d => d["caudal L/min"] * factor);
+            if (lineChartInstance) lineChartInstance.destroy();
+            lineChartInstance = new Chart(lineChartCanvas, {
+                type: 'line', data: { labels: lineLabels, datasets: [{ label: 'Caudal Simulado (L/min)', data: lineScaledData, borderColor: 'rgba(0, 86, 179, 1)', backgroundColor: 'rgba(0, 86, 179, 0.2)', borderWidth: 1.5, pointRadius: 0, fill: true }] },
+                options: { responsive: true, maintainAspectRatio: false,
+                     scales: {
+                         x: { ticks: { maxTicksLimit: 24 } },
+                         y: { beginAtZero: true,
+                            title: { display: true, text: 'Litros por minuto (L/min)' }
+                          } } }
+            });
 
-        const tipoSistema = tipoSistemaSelect.value;
-        const esBombaDeCalor = tipoSistema !== 'sala_calderas';
-        const personasBase = 769.5;
-        const factor = totalPersonas > 0 ? totalPersonas / personasBase : 0;
+            const hourlyAggregatedData = aggregateHourlyData();
+            const barScaledData = hourlyAggregatedData.map(d => d * factor);
+            
+            let consumoTotalPunta = 0;
+            const barColors = [], borderColors = [];
+            const peakColor = 'rgba(255, 99, 132, 0.5)', defaultColor = 'rgba(0, 86, 179, 0.5)';
+            const peakBorderColor = 'rgba(255, 99, 132, 1)', defaultBorderColor = 'rgba(0, 86, 179, 1)';
+
+            for (let hour = 0; hour < 24; hour++) {
+                if (esBombaDeCalor && hour >= params.horaPuntaInicio && hour < params.horaPuntaFin) {
+                    consumoTotalPunta += barScaledData[hour];
+                    barColors.push(peakColor); borderColors.push(peakBorderColor);
+                } else {
+                    barColors.push(defaultColor); borderColors.push(defaultBorderColor);
+                }
+            }
+            consumoPuntaValorSpan.textContent = esBombaDeCalor ? Math.round(consumoTotalPunta).toLocaleString('es-CL') : '0';
+
+            const barLabels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(barChartCanvas, {
+                type: 'bar', 
+                data: { 
+                    labels: barLabels, 
+                    datasets: [{ 
+                        label: 'Consumo Total (Litros)', 
+                        data: barScaledData, 
+                        backgroundColor: barColors, 
+                        borderColor: borderColors, 
+                        borderWidth: 1 
+                    }] 
+                },
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { 
+                        y: { 
+                            beginAtZero: true,
+                            title: { display: true, text: 'Litros (Lts)' }
+                        } 
+                    },
+                    // CONFIGURACIÓN AÑADIDA PARA EL GRÁFICO DE CONSUMO POR HORA
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        datalabels: {
+                            display: true,
+                            color: '#333',
+                            anchor: 'end',
+                            align: 'top',
+                            font: {
+                                weight: 'bold',
+                                size: 10
+                            },
+                            formatter: function(value) {
+                                if (value > 1) { // Muestra la etiqueta solo si el valor es mayor a 1
+                                    return Math.round(value).toLocaleString('es-CL');
+                                } else {
+                                    return '';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
         
-        const lineLabels = monitoringData.map(d => new Date(d.created_at).toTimeString().substring(0, 5));
-        const lineScaledData = monitoringData.map(d => d["caudal L/min"] * factor);
-        if (lineChartInstance) lineChartInstance.destroy();
-        lineChartInstance = new Chart(lineChartCanvas, {
-            type: 'line', data: { labels: lineLabels, datasets: [{ label: 'Caudal Simulado (L/min)', data: lineScaledData, borderColor: 'rgba(0, 86, 179, 1)', backgroundColor: 'rgba(0, 86, 179, 0.2)', borderWidth: 1.5, pointRadius: 0, fill: true }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { maxTicksLimit: 24 } }, y: { beginAtZero: true } } }
+        // ---- Gráfico de Consumo Mensual (m³) ----
+        const diasEnJulio = 31;
+        const consumoDiarioTotalJulio = totalPersonas * params.litrosPersonaDia;
+        const consumoMensualTotalJulio = consumoDiarioTotalJulio * diasEnJulio;
+        
+        const consumoAnualTotalLitros = (consumoMensualDistribucion.julio > 0) ? (consumoMensualTotalJulio / consumoMensualDistribucion.julio) : 0;
+        
+        const consumoAnualTotalM3 = consumoAnualTotalLitros / 1000;
+        consumoAnualValorSpan.textContent = Math.round(consumoAnualTotalM3).toLocaleString('es-CL');
+
+        const monthlyLabels = Object.keys(consumoMensualDistribucion).map(m => m.charAt(0).toUpperCase() + m.slice(1));
+        const monthlyDataM3 = Object.values(consumoMensualDistribucion).map(dist => {
+            const consumoMensualLitros = consumoAnualTotalLitros * dist;
+            return consumoMensualLitros / 1000;
         });
 
-        const hourlyAggregatedData = aggregateHourlyData();
-        const barScaledData = hourlyAggregatedData.map(d => d * factor);
-        
-        let consumoTotalPunta = 0;
-        const barColors = [];
-        const borderColors = [];
-        const peakColor = 'rgba(255, 99, 132, 0.5)';
-        const defaultColor = 'rgba(0, 86, 179, 0.5)';
-        const peakBorderColor = 'rgba(255, 99, 132, 1)';
-        const defaultBorderColor = 'rgba(0, 86, 179, 1)';
-
-        for (let hour = 0; hour < 24; hour++) {
-            if (esBombaDeCalor && hour >= params.horaPuntaInicio && hour < params.horaPuntaFin) {
-                consumoTotalPunta += barScaledData[hour];
-                barColors.push(peakColor);
-                borderColors.push(peakBorderColor);
-            } else {
-                barColors.push(defaultColor);
-                borderColors.push(defaultBorderColor);
+        if (monthlyChartInstance) monthlyChartInstance.destroy();
+        monthlyChartInstance = new Chart(monthlyChartCanvas, {
+            type: 'bar',
+            data: {
+                labels: monthlyLabels,
+                datasets: [{
+                    label: 'Consumo Mensual (m³)',
+                    data: monthlyDataM3,
+                    backgroundColor: 'rgba(0, 86, 179, 0.5)',
+                    borderColor: 'rgba(0, 86, 179, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { 
+                        beginAtZero: true,
+                        title: { display: true, text: 'Metros Cúbicos (m³)' }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    datalabels: {
+                        display: true,
+                        anchor: 'end',
+                        align: 'top',
+                        color: '#333',
+                        font: {
+                            weight: 'bold',
+                        },
+                        formatter: function(value) {
+                            if (value > 0) {
+                                return Math.round(value).toLocaleString('es-CL');
+                            } else {
+                                return '';
+                            }
+                        }
+                    }
+                }
             }
-        }
-        consumoPuntaValorSpan.textContent = esBombaDeCalor ? Math.round(consumoTotalPunta).toLocaleString('es-CL') : '0';
-
-        const barLabels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
-        if (barChartInstance) barChartInstance.destroy();
-        barChartInstance = new Chart(barChartCanvas, {
-            type: 'bar', data: { labels: barLabels, datasets: [{ label: 'Consumo Total (Litros)', data: barScaledData, backgroundColor: barColors, borderColor: borderColors, borderWidth: 1 }] },
-            options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } }
         });
     };
     
@@ -307,7 +431,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         const response = await fetch('Data/datos_caudal.json');
         if (!response.ok) throw new Error('No se pudieron cargar los datos de monitoreo.');
         monitoringData = await response.json();
-        
+    } catch (error) {
+        console.error('Error al cargar datos_caudal.json:', error);
+        alert('No se pudo cargar el perfil de consumo para los gráficos de L/min y L/h. El gráfico de consumo mensual funcionará correctamente.');
+    } finally {
         const allInputs = document.querySelectorAll('#calculadora-form input, #calculadora-form select');
         allInputs.forEach(input => input.addEventListener('input', updateComparison));
         editBtn.addEventListener('click', () => toggleEditMode(false));
@@ -315,17 +442,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         tipoSistemaSelect.addEventListener('change', handleSistemaChange);
         
         tabLine.addEventListener('click', () => {
-            tabLine.classList.add('active'); tabBar.classList.remove('active');
-            lineChartContainer.style.display = 'block'; barChartContainer.style.display = 'none';
+            tabLine.classList.add('active'); tabBar.classList.remove('active'); tabMonthly.classList.remove('active');
+            lineChartContainer.style.display = 'block'; barChartContainer.style.display = 'none'; monthlyChartContainer.style.display = 'none';
         });
         tabBar.addEventListener('click', () => {
-            tabBar.classList.add('active'); tabLine.classList.remove('active');
-            barChartContainer.style.display = 'block'; lineChartContainer.style.display = 'none';
+            tabBar.classList.add('active'); tabLine.classList.remove('active'); tabMonthly.classList.remove('active');
+            barChartContainer.style.display = 'block'; lineChartContainer.style.display = 'none'; monthlyChartContainer.style.display = 'none';
+        });
+        tabMonthly.addEventListener('click', () => {
+            tabMonthly.classList.add('active'); tabLine.classList.remove('active'); tabBar.classList.remove('active');
+            monthlyChartContainer.style.display = 'block'; lineChartContainer.style.display = 'none'; barChartContainer.style.display = 'none';
         });
         
         const initializeApp = () => {
             const formatHour = (hour) => `${String(hour).padStart(2, '0')}:00`;
             document.getElementById('view-demanda-guia').textContent = demandaGuiaMap[params.demandaGuia];
+            document.getElementById('view-litros-persona-dia').textContent = `${params.litrosPersonaDia} L`;
             document.getElementById('view-eficiencia').textContent = `${(params.eficiencia * 100).toFixed(0)}%`;
             document.getElementById('view-uso-acumulador').textContent = `${(params.usoAcumulador * 100).toFixed(0)}%`;
             document.getElementById('view-temp-fria').textContent = `${params.tempFria}°C`;
@@ -338,9 +470,5 @@ document.addEventListener('DOMContentLoaded', async () => {
         };
 
         initializeApp();
-        
-    } catch (error) {
-        console.error('Error al cargar datos_caudal.json:', error);
-        alert('No se pudo cargar el perfil de consumo. Los gráficos no funcionarán.');
     }
 });
