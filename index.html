@@ -12,103 +12,125 @@
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.4</span>
+            <span class="version-indicator">v 1.41</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
     <div class="main-container">
         <form id="calculadora-form">
-            <h2>Ingreso de Departamentos</h2>
-            <table id="depto-table">
-                <thead>
-                    <tr>
-                        <th>Cant. De Dormitorios</th>
-                        <th>Pers / depto</th>
-                        <th>Unidades</th>
-                        <th>Total Personas</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1 dormitorio</td>
-                        <td>1,5</td>
-                        <td><input type="number" id="unidades-1" min="0" value="0"></td>
-                        <td class="total-personas-row" data-pers="1.5"></td>
-                    </tr>
-                    <tr>
-                        <td>2 dormitorios</td>
-                        <td>3</td>
-                        <td><input type="number" id="unidades-2" min="0" value="0"></td>
-                        <td class="total-personas-row" data-pers="3"></td>
-                    </tr>
-                    <tr>
-                        <td>3 dormitorios</td>
-                        <td>4</td>
-                        <td><input type="number" id="unidades-3" min="0" value="0"></td>
-                        <td class="total-personas-row" data-pers="4"></td>
-                    </tr>
-                    <tr>
-                        <td>4 dormitorios</td>
-                        <td>6</td>
-                        <td><input type="number" id="unidades-4" min="0" value="0"></td>
-                        <td class="total-personas-row" data-pers="6"></td>
-                    </tr>
-                    <tr>
-                        <td>5 dormitorios</td>
-                        <td>7</td>
-                        <td><input type="number" id="unidades-5" min="0" value="0"></td>
-                        <td class="total-personas-row" data-pers="7"></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr>
-                        <td colspan="2"><strong>Total:</strong></td>
-                        <td id="total-unidades"></td>
-                        <td id="total-personas-general"></td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <h2>Parámetros del Sistema</h2>
+            <h2>Definición de Demanda</h2>
             <div class="form-group">
-                <label for="tipo-sistema">Tipo de Sistema:</label>
-                <select id="tipo-sistema" required>
-                    <option value="sala_calderas" selected>Sala de Calderas</option>
-                    <option value="apoyo_re">Bomba de calor con apoyo de R.E.</option>
-                    <option value="falla_re">Bomba de calor con RE en caso de falla</option>
+                <label for="metodo-calculo">Método de Cálculo:</label>
+                <select id="metodo-calculo">
+                    <option value="departamentos" selected>Por Departamentos</option>
+                    <option value="total_personas">Total de Personas</option>
                 </select>
             </div>
-
-            <div class="form-group">
-                <label for="acumulacion-ingresada">Acumulación (Litros):</label>
-                <input type="number" id="acumulacion-ingresada" min="0" value="1000" required>
-            </div>
             
-            <div id="potencia-sala-calderas-group">
-                <div class="form-group">
-                    <label for="potencia-ingresada">Potencia Térmica (kW):</label>
-                    <input type="number" id="potencia-ingresada" min="0" value="300" required>
-                </div>
+            <div id="ingreso-departamentos-group">
+                <table id="depto-table">
+                    <thead>
+                        <tr>
+                            <th>Cant. De Dormitorios</th>
+                            <th>Pers / depto</th>
+                            <th>Unidades</th>
+                            <th>Total Personas</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1 dormitorio</td>
+                            <td>1,5</td>
+                            <td><input type="number" id="unidades-1" min="0" value="0"></td>
+                            <td class="total-personas-row" data-pers="1.5"></td>
+                        </tr>
+                        <tr>
+                            <td>2 dormitorios</td>
+                            <td>3</td>
+                            <td><input type="number" id="unidades-2" min="0" value="0"></td>
+                            <td class="total-personas-row" data-pers="3"></td>
+                        </tr>
+                        <tr>
+                            <td>3 dormitorios</td>
+                            <td>4</td>
+                            <td><input type="number" id="unidades-3" min="0" value="0"></td>
+                            <td class="total-personas-row" data-pers="4"></td>
+                        </tr>
+                        <tr>
+                            <td>4 dormitorios</td>
+                            <td>6</td>
+                            <td><input type="number" id="unidades-4" min="0" value="0"></td>
+                            <td class="total-personas-row" data-pers="6"></td>
+                        </tr>
+                        <tr>
+                            <td>5 dormitorios</td>
+                            <td>7</td>
+                            <td><input type="number" id="unidades-5" min="0" value="0"></td>
+                            <td class="total-personas-row" data-pers="7"></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="2"><strong>Total:</strong></td>
+                            <td id="total-unidades"></td>
+                            <td id="total-personas-general"></td>
+                        </tr>
+                    </tfoot>
+                </table>
             </div>
 
-            <div id="potencia-bomba-calor-group" style="display:none;">
-                <div class="form-group">
-                    <label for="potencia-bc">Potencia Bombas de Calor (kW):</label>
-                    <input type="number" id="potencia-bc" min="0" value="150">
-                </div>
-                <div class="form-group">
-                    <label for="potencia-re">Potencia Resistencias Eléctricas (kW):</label>
-                    <input type="number" id="potencia-re" min="0" value="150">
-                </div>
-                <p><strong>Potencia Térmica Total:</strong> <span id="potencia-total-display">300</span> kW</p>
+            <div id="ingreso-total-personas-group" style="display: none;">
+                <table class="compact-table">
+                    <tbody>
+                        <tr>
+                            <td>Total de Personas</td>
+                            <td><input type="number" id="input-total-personas" min="0" value="100"></td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
+
+            <h2>Parámetros del Sistema</h2>
+            <table class="compact-table" id="system-params-table">
+                <tbody>
+                    <tr>
+                        <td>Tipo de Sistema</td>
+                        <td>
+                            <select id="tipo-sistema" required>
+                                <option value="sala_calderas" selected>Sala de Calderas</option>
+                                <option value="apoyo_re">Bomba de calor con apoyo de R.E.</option>
+                                <option value="falla_re">Bomba de calor con RE en caso de falla</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Acumulación (Litros)</td>
+                        <td><input type="number" id="acumulacion-ingresada" min="0" value="1000" required></td>
+                    </tr>
+                    <tr id="potencia-sala-calderas-group">
+                        <td>Potencia Térmica (kW)</td>
+                        <td><input type="number" id="potencia-ingresada" min="0" value="300" required></td>
+                    </tr>
+                    <tr id="potencia-bc-group" style="display:none;">
+                        <td>Potencia Bombas de Calor (kW)</td>
+                        <td><input type="number" id="potencia-bc" min="0" value="150"></td>
+                    </tr>
+                    <tr id="potencia-re-group" style="display:none;">
+                        <td>Potencia Resistencias Eléctricas (kW)</td>
+                        <td><input type="number" id="potencia-re" min="0" value="150"></td>
+                    </tr>
+                    <tr id="potencia-total-display-row" style="display:none;">
+                        <td class="label-strong">Potencia Térmica Total</td>
+                        <td class="value-strong"><span id="potencia-total-display">300</span> kW</td>
+                    </tr>
+                </tbody>
+            </table>
 
             <div class="param-fijos">
                 <div class="header">
-                    <h3>Datos Fijos</h3>
+                    <h2>Datos Fijos</h2>
                     <button type="button" id="edit-params-btn">Editar</button>
                 </div>
-
                 <div id="param-view-mode">
                     <table>
                         <tbody>
@@ -124,9 +146,8 @@
                         </tbody>
                     </table>
                 </div>
-
                 <div id="param-edit-mode" style="display:none;">
-                    <table>
+                     <table>
                         <tbody>
                             <tr>
                                 <td>Guía de Demanda</td>
@@ -234,7 +255,6 @@
             </div>
         </div>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>

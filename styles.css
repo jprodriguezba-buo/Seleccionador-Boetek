@@ -256,6 +256,226 @@ table.falla-re-active .col-falla {
 .info-boxes-wrapper {
     display: flex;
     gap: 15px;
+}/* Elimina flechas en input type number */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    margin: 20px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    max-width: 1200px;
+    background-color: #f9f9f9;
+}
+
+.main-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 2px solid #0056b3;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Contenedor para el logo y la versión */
+.logo-container {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+#logobtk {
+    width: 180px;
+    height: auto;
+}
+
+.version-indicator {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-weight: bold;
+    padding-bottom: 5px;
+}
+
+h1, h2, h3, h4 {
+    color: #333;
+}
+h1 {
+    text-align: center;
+    color: #0056b3;
+    margin: 0;
+}
+
+/* --- ESTILOS UNIFICADOS PARA TÍTULOS DE SECCIÓN --- */
+#calculadora-form h2 {
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+#calculadora-form h2:first-of-type {
+    margin-top: 0;
+}
+
+h3 {
+    margin-top: 0;
+}
+
+#calculadora-form {
+    flex: 1;
+    min-width: 400px;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.resultados-wrapper {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 500px;
+}
+
+.resultados-main, .chart-section, .info-box {
+    padding: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+th, td {
+    padding: 4px 4px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+#depto-table tfoot td {
+    font-weight: bold;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input[type="number"], select {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+#depto-table input[type="number"] {
+    width: 80%;
+    text-align: right;
+}
+
+#param-edit-mode input[type="number"] {
+    width: 60px;
+    display: inline-block;
+}
+
+.param-fijos {
+    margin-top: 25px;
+    padding: 15px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+.param-fijos .header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: none;
+    padding: 0;
+    margin-bottom: 10px;
+}
+
+/* Override para el H2 dentro del header de "Datos Fijos" */
+.param-fijos .header h2 {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.status-ok {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.status-insuficiente {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* ... (resto de los estilos sin cambios) ... */
+
+/* --- ESTILOS PARA LA NUEVA TABLA DE PARÁMETROS (v1.41) --- */
+.compact-table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.compact-table td {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+.compact-table td:first-child {
+    font-weight: bold;
+    width: 60%;
+}
+
+.compact-table input {
+    text-align: right;
+    width: 100%;
+}
+
+.compact-table select {
+    text-align: right;
+    text-align-last: right;
+    width: 100%;
+    padding-right: 5px;
+}
+
+.label-strong {
+    font-weight: bold;
+}
+
+.value-strong {
+    text-align: right;
+    font-weight: bold;
+    padding-right: 8px !important;
 }
 
 .info-box {
@@ -274,4 +494,42 @@ table.falla-re-active .col-falla {
 
 .info-box span {
     font-weight: bold;
+}
+
+/* --- ESTILOS PARA LA NUEVA TABLA DE PARÁMETROS (v1.41) --- */
+.compact-table {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.compact-table td {
+    padding: 4px;
+    vertical-align: middle;
+}
+
+.compact-table td:first-child {
+    font-weight: bold;
+    width: 60%;
+}
+
+.compact-table input {
+    text-align: right;
+    width: 100%;
+}
+
+.compact-table select {
+    text-align: left;
+    text-align-last: left;
+    width: 100%;
+    padding-right: 5px;
+}
+
+.label-strong {
+    font-weight: bold;
+}
+
+.value-strong {
+    text-align: right;
+    font-weight: bold;
+    padding-right: 8px !important;
 }

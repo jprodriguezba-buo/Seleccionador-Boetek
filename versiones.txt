@@ -8,3 +8,6 @@
 - se incorpora pestaña con grafico consumo mensual
 - se mejoran graficos incorporando puntos de datos
 - se incorpora tarjeta de consumos anual
+1.41
+- se incorpora seleccion metodo de calculo personas o departamentos
+- se modifica seccion parametros del sistema para que quede mas compacto

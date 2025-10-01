@@ -19,15 +19,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     const saveBtn = document.getElementById('save-params-btn');
     const filasHoraPunta = document.querySelectorAll('.fila-hora-punta');
 
-    // Nuevos elementos del sistema
-    const tipoSistemaSelect = document.getElementById('tipo-sistema');
-    const acumulacionIngresadaInput = document.getElementById('acumulacion-ingresada');
-    const potenciaSalaCalderasGroup = document.getElementById('potencia-sala-calderas-group');
-    const potenciaIngresadaInput = document.getElementById('potencia-ingresada');
-    const potenciaBombaCalorGroup = document.getElementById('potencia-bomba-calor-group');
+    // Selectores para v1.41
+    const metodoCalculoSelect = document.getElementById('metodo-calculo');
+    const ingresoDepartamentosGroup = document.getElementById('ingreso-departamentos-group');
+    const ingresoTotalPersonasGroup = document.getElementById('ingreso-total-personas-group');
+    const inputTotalPersonas = document.getElementById('input-total-personas');
+    
+    // Selectores para la nueva tabla de parámetros de sistema
+    const potenciaSalaCalderasRow = document.getElementById('potencia-sala-calderas-group');
+    const potenciaBcRow = document.getElementById('potencia-bc-group');
+    const potenciaReRow = document.getElementById('potencia-re-group');
+    const potenciaTotalDisplayRow = document.getElementById('potencia-total-display-row');
     const potenciaBcInput = document.getElementById('potencia-bc');
     const potenciaReInput = document.getElementById('potencia-re');
     const potenciaTotalDisplaySpan = document.getElementById('potencia-total-display');
+    const potenciaIngresadaInput = document.getElementById('potencia-ingresada');
+    const tipoSistemaSelect = document.getElementById('tipo-sistema');
+    const acumulacionIngresadaInput = document.getElementById('acumulacion-ingresada');
 
     // Elementos de resultados
     const resultadoTable = document.getElementById('resultado-table');
@@ -84,6 +92,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- LÓGICA PRINCIPAL DE LA APP ---
+    const handleMetodoCalculoChange = () => {
+        const metodo = metodoCalculoSelect.value;
+        if (metodo === 'departamentos') {
+            ingresoDepartamentosGroup.style.display = 'block';
+            ingresoTotalPersonasGroup.style.display = 'none';
+        } else {
+            ingresoDepartamentosGroup.style.display = 'none';
+            ingresoTotalPersonasGroup.style.display = 'block';
+        }
+        updateComparison();
+    };
+
     const updateTotals = () => {
         let totalUnidades = 0, totalPersonas = 0;
         deptoInputs.forEach(input => {
@@ -100,8 +120,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const updateComparison = () => {
-        updateTotals();
-        const totalPersonas = parseFloat(totalPersonasGeneralCell.textContent) || 0;
+        let totalPersonas = 0;
+        if (metodoCalculoSelect.value === 'departamentos') {
+            updateTotals();
+            totalPersonas = parseFloat(totalPersonasGeneralCell.textContent) || 0;
+        } else {
+            totalPersonas = parseFloat(inputTotalPersonas.value) || 0;
+        }
+        
         const acumulacionIngresada = parseFloat(acumulacionIngresadaInput.value) || 0;
         const { eficiencia, usoAcumulador, tempFria, tempAcumulacion, tempConsumo } = params;
         const calorEspecificoAgua = 4.186;
@@ -203,9 +229,15 @@ document.addEventListener('DOMContentLoaded', async () => {
     const handleSistemaChange = () => {
         const tipoSistema = tipoSistemaSelect.value;
         const esBombaDeCalor = tipoSistema !== 'sala_calderas';
+        
+        const selectedText = tipoSistemaSelect.options[tipoSistemaSelect.selectedIndex].text;
+        tipoSistemaSelect.title = selectedText;
 
-        potenciaSalaCalderasGroup.style.display = esBombaDeCalor ? 'none' : 'block';
-        potenciaBombaCalorGroup.style.display = esBombaDeCalor ? 'block' : 'none';
+        potenciaSalaCalderasRow.style.display = esBombaDeCalor ? 'none' : '';
+        potenciaBcRow.style.display = esBombaDeCalor ? '' : 'none';
+        potenciaReRow.style.display = esBombaDeCalor ? '' : 'none';
+        potenciaTotalDisplayRow.style.display = esBombaDeCalor ? '' : 'none';
+
         consumoPuntaBox.style.display = esBombaDeCalor ? 'block' : 'none';
         filasHoraPunta.forEach(fila => {
             fila.style.display = esBombaDeCalor ? '' : 'none';
@@ -288,12 +320,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (lineChartInstance) lineChartInstance.destroy();
             lineChartInstance = new Chart(lineChartCanvas, {
                 type: 'line', data: { labels: lineLabels, datasets: [{ label: 'Caudal Simulado (L/min)', data: lineScaledData, borderColor: 'rgba(0, 86, 179, 1)', backgroundColor: 'rgba(0, 86, 179, 0.2)', borderWidth: 1.5, pointRadius: 0, fill: true }] },
-                options: { responsive: true, maintainAspectRatio: false,
-                     scales: {
-                         x: { ticks: { maxTicksLimit: 24 } },
-                         y: { beginAtZero: true,
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    scales: { 
+                        x: { ticks: { maxTicksLimit: 24 } }, 
+                        y: { 
+                            beginAtZero: true,
                             title: { display: true, text: 'Litros por minuto (L/min)' }
-                          } } }
+                        } 
+                    } 
+                }
             });
 
             const hourlyAggregatedData = aggregateHourlyData();
@@ -337,7 +373,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                             title: { display: true, text: 'Litros (Lts)' }
                         } 
                     },
-                    // CONFIGURACIÓN AÑADIDA PARA EL GRÁFICO DE CONSUMO POR HORA
                     plugins: {
                         legend: {
                             display: false
@@ -352,8 +387,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 size: 10
                             },
                             formatter: function(value) {
-                                if (value > 1) { // Muestra la etiqueta solo si el valor es mayor a 1
-                                    return Math.round(value).toLocaleString('es-CL');
+                                if (value > 1) {
+                                    return Math.round(value);
                                 } else {
                                     return '';
                                 }
@@ -437,6 +472,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     } finally {
         const allInputs = document.querySelectorAll('#calculadora-form input, #calculadora-form select');
         allInputs.forEach(input => input.addEventListener('input', updateComparison));
+        
+        metodoCalculoSelect.addEventListener('change', handleMetodoCalculoChange);
         editBtn.addEventListener('click', () => toggleEditMode(false));
         saveBtn.addEventListener('click', () => toggleEditMode(true));
         tipoSistemaSelect.addEventListener('change', handleSistemaChange);
@@ -465,6 +502,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('view-temp-consumo').textContent = `${params.tempConsumo}°C`;
             document.getElementById('view-hora-punta-inicio').textContent = formatHour(params.horaPuntaInicio);
             document.getElementById('view-hora-punta-fin').textContent = formatHour(params.horaPuntaFin);
+            
+            handleMetodoCalculoChange();
             handleSistemaChange();
             updateComparison(); 
         };
