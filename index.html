@@ -7,18 +7,22 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
     <link rel="icon" href="./Images/isotipo_Boetek.ico">
 </head>
 <body>
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.51</span>
+            <span class="version-indicator">v 1.6</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
     <div class="main-container">
-        <form id="calculadora-form">
+        
+        <form id="calculadora-form" class="panel">
             <h2>Definición de Demanda</h2>
             <div class="form-group">
                 <label for="metodo-calculo">Método de Cálculo:</label>
@@ -211,7 +215,10 @@
         </form>
 
         <div class="resultados-wrapper" id="resultados">
-            <div class="resultados-main">
+            <div class="panel actions-panel">
+    <button id="generar-reporte-btn">Generar Reporte PDF</button>
+</div>
+            <div class="resultados-main panel">
                 <h3>Resultados de Selección</h3>
                 <table id="resultado-table">
                     <thead>
@@ -230,7 +237,7 @@
                         </tbody>
                 </table>
             </div>
-            <div class="cost-analysis-section">
+            <div class="cost-analysis-section panel">
                 <h3>Análisis de Resultados</h3>
                 <div class="chart-tabs">
                     <button id="tab-comparative" class="active">Tabla Comparativa</button>
@@ -369,7 +376,7 @@
                     <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
                 </div>
             </div>
-            <div class="chart-section">
+            <div class="chart-section panel">
                 <div class="chart-tabs">
                     <button id="tab-line" class="active">Perfil Diario (L/min)</button>
                     <button id="tab-bar">Consumo por Hora (L)</button>
@@ -393,6 +400,8 @@
 
         </div>
     </div>
+
+    <script src="reporte.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

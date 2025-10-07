@@ -75,13 +75,20 @@ h3 {
     margin-top: 0;
 }
 
-#calculadora-form {
-    flex: 1;
-    min-width: 400px;
+/* --- NUEVA CLASE REUTILIZABLE (DRY) --- */
+.panel {
     background: white;
     padding: 20px;
     border-radius: 8px;
+    border: 1px solid #ddd; /* Añadido para consistencia */
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+#calculadora-form {
+    flex: 1;
+    min-width: 400px;
+    /* Estilos comunes movidos a .panel */
 }
 
 .resultados-wrapper {
@@ -90,14 +97,6 @@ h3 {
     flex-direction: column;
     gap: 15px;
     min-width: 500px;
-}
-
-.resultados-main, .chart-section, .info-box, .cost-analysis-section {
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 table {
@@ -312,15 +311,6 @@ table.falla-re-active .col-falla {
     text-align: left;
    
 }
-.info-boxes-wrapper {
-    display: flex;
-    gap: 15px;
-}
-
-.info-box {
-    flex: 1;
-    text-align: center;
-}
 
 /* NUEVA CLASE PARA EL CONTENIDO DE LAS PESTAÑAS */
 .info-box-content {
@@ -328,15 +318,42 @@ table.falla-re-active .col-falla {
     padding: 20px 0;
 }
 
-.info-box h4, .info-box-content h4 {
+.info-box-content h4 {
     margin-top: 0;
     margin-bottom: 15px;
 }
-.info-box p, .info-box-content p {
+.info-box-content p {
     margin: 5px 0;
     font-size: 1em;
 }
 
-.info-box span, .info-box-content span {
+.info-box-content span {
     font-weight: bold;
+}
+.actions-panel {
+    width: auto;
+    text-align: right;
+}
+
+/* Estilos opcionales para el panel de acciones */
+#generar-reporte-btn {
+    width: auto; /* Para que no ocupe el 100% */
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+#generar-reporte-btn:hover {
+    background-color: #218838;
+}
+
+#generar-reporte-btn:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
 }

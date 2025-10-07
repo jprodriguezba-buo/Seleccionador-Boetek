@@ -22,3 +22,9 @@
 - se corrije calculo de consumo promedio diario, considerando estacionalidad.
 1.51b
 - se cambia hora punta de 18-22
+1.52
+- se mejora estructura css y html, se crea clase panel
+- se mejora estructura de archivo app.js
+1.6
+- se incorpora reporte pdf en su primera version
+
