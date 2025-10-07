@@ -11,3 +11,6 @@
 1.41
 - se incorpora seleccion metodo de calculo personas o departamentos
 - se modifica seccion parametros del sistema para que quede mas compacto
+1.42
+- se agrega favicon Boetek
+- se agrega grafico eficiencia, punto de eficiencia y consumo $ estimado.

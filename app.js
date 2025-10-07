@@ -5,27 +5,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     Chart.defaults.plugins.datalabels.display = false;
 
     // --- ELEMENTOS DEL DOM ---
-    const form = document.getElementById('calculadora-form');
     const produccionContinua50cSpan = document.getElementById('produccion-continua-50c');
     const produccionContinuaTempSpan = document.getElementById('prod-continua-temp');
     const produccionContinuaValorSpan = document.getElementById('produccion-continua-valor');
     const deptoInputs = document.querySelectorAll('#depto-table input[type="number"]');
     const totalUnidadesCell = document.getElementById('total-unidades');
     const totalPersonasGeneralCell = document.getElementById('total-personas-general');
-    const demandaGuiaSelect = document.getElementById('demanda-guia');
     const viewMode = document.getElementById('param-view-mode');
     const editMode = document.getElementById('param-edit-mode');
     const editBtn = document.getElementById('edit-params-btn');
     const saveBtn = document.getElementById('save-params-btn');
     const filasHoraPunta = document.querySelectorAll('.fila-hora-punta');
 
-    // Selectores para v1.41
     const metodoCalculoSelect = document.getElementById('metodo-calculo');
     const ingresoDepartamentosGroup = document.getElementById('ingreso-departamentos-group');
     const ingresoTotalPersonasGroup = document.getElementById('ingreso-total-personas-group');
     const inputTotalPersonas = document.getElementById('input-total-personas');
     
-    // Selectores para la nueva tabla de parámetros de sistema
     const potenciaSalaCalderasRow = document.getElementById('potencia-sala-calderas-group');
     const potenciaBcRow = document.getElementById('potencia-bc-group');
     const potenciaReRow = document.getElementById('potencia-re-group');
@@ -37,29 +33,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     const tipoSistemaSelect = document.getElementById('tipo-sistema');
     const acumulacionIngresadaInput = document.getElementById('acumulacion-ingresada');
 
-    // Elementos de resultados
     const resultadoTable = document.getElementById('resultado-table');
     const resultadoTableBody = document.querySelector('#resultado-table tbody');
     const consumoPuntaBox = document.getElementById('consumo-punta-box');
     const consumoPuntaValorSpan = document.getElementById('consumo-punta-valor');
     const generacionPuntaValorSpan = document.getElementById('generacion-punta-valor');
-    const consumoAnualValorSpan = document.getElementById('consumo-anual-valor');
+
+    // Elementos de la tarjeta de consumo anual
+    const consumoDiarioValorSpan = document.getElementById('consumo-diario-valor');
+    const ratioEsperadoValorSpan = document.getElementById('ratio-esperado-valor');
+    const costoAcsValorSpan = document.getElementById('costo-acs-valor');
+    const costoAnualValorSpan = document.getElementById('costo-anual-valor');
     
-    // Elementos de los gráficos
     const tabLine = document.getElementById('tab-line');
     const tabBar = document.getElementById('tab-bar');
     const tabMonthly = document.getElementById('tab-monthly');
+    const tabEfficiency = document.getElementById('tab-efficiency');
     const lineChartContainer = document.getElementById('line-chart-container');
     const barChartContainer = document.getElementById('bar-chart-container');
     const monthlyChartContainer = document.getElementById('monthly-chart-container');
+    const efficiencyChartContainer = document.getElementById('efficiency-chart-container');
     const lineChartCanvas = document.getElementById('lineChart').getContext('2d');
     const barChartCanvas = document.getElementById('barChart').getContext('2d');
     const monthlyChartCanvas = document.getElementById('monthlyChart').getContext('2d');
+    const efficiencyChartCanvas = document.getElementById('efficiencyChart').getContext('2d');
 
     // --- VARIABLES GLOBALES ---
     let lineChartInstance = null;
     let barChartInstance = null;
     let monthlyChartInstance = null;
+    let efficiencyChartInstance = null;
     let monitoringData = [];
     let params = {
         demandaGuia: 'low-medium',
@@ -69,27 +72,15 @@ document.addEventListener('DOMContentLoaded', async () => {
         tempFria: 10,
         tempAcumulacion: 45, 
         tempConsumo: 45,
-        horaPuntaInicio: 18,
-        horaPuntaFin: 22
+        horaPuntaInicio: 19,
+        horaPuntaFin: 21,
+        valorGas: 1250,
+        valorKwh: 150
     };
-    const demandaGuiaMap = {
-        'low': 'Baja',
-        'low-medium': 'Baja-Media',
-        'medium': 'Media',
-        'high': 'Alta'
-    };
-    const demandaData = {
-        low: { "5min": 1.5, "15min": 3.8, "30min": 6.4, "60min": 10.6, "120min": 17.0, "180min": 23.1, "diarioAvg": 53, "diarioMax": 76 },
-        "low-medium": { "5min": 2.1, "15min": 5.1, "30min": 8.7, "60min": 14.4, "120min": 23.7, "180min": 32.4, "diarioAvg": 84, "diarioMax": 131 },
-        medium: { "5min": 2.6, "15min": 6.4, "30min": 11.0, "60min": 18.2, "120min": 30.3, "180min": 41.6, "diarioAvg": 114, "diarioMax": 185 },
-        high: { "5min": 4.5, "15min": 11.4, "30min": 19.3, "60min": 32.2, "120min": 54.9, "180min": 71.9, "diarioAvg": 204, "diarioMax": 340 },
-        monitoreo: { "5min": 1.85, "15min": 4.19, "30min": 5.66, "60min": 9.25, "120min": 14.50, "180min": 20.00, "diarioAvg": "N/A", "diarioMax": 67 }
-    };
-    const consumoMensualDistribucion = {
-        enero: 0.0682, febrero: 0.0603, marzo: 0.0778, abril: 0.0818,
-        mayo: 0.0899, junio: 0.0944, julio: 0.0972, agosto: 0.0931,
-        septiembre: 0.0923, octubre: 0.0896, noviembre: 0.0814, diciembre: 0.0740
-    };
+    const demandaGuiaMap = { 'low': 'Baja', 'low-medium': 'Baja-Media', 'medium': 'Media', 'high': 'Alta' };
+    const demandaData = { low: { "5min": 1.5, "15min": 3.8, "30min": 6.4, "60min": 10.6, "120min": 17.0, "180min": 23.1, "diarioAvg": 53, "diarioMax": 76 }, "low-medium": { "5min": 2.1, "15min": 5.1, "30min": 8.7, "60min": 14.4, "120min": 23.7, "180min": 32.4, "diarioAvg": 84, "diarioMax": 131 }, medium: { "5min": 2.6, "15min": 6.4, "30min": 11.0, "60min": 18.2, "120min": 30.3, "180min": 41.6, "diarioAvg": 114, "diarioMax": 185 }, high: { "5min": 4.5, "15min": 11.4, "30min": 19.3, "60min": 32.2, "120min": 54.9, "180min": 71.9, "diarioAvg": 204, "diarioMax": 340 }, monitoreo: { "5min": 1.85, "15min": 4.19, "30min": 5.66, "60min": 9.25, "120min": 14.50, "180min": 20.00, "diarioAvg": "N/A", "diarioMax": 67 } };
+    const consumoMensualDistribucion = { enero: 0.0682, febrero: 0.0603, marzo: 0.0778, abril: 0.0818, mayo: 0.0899, junio: 0.0944, julio: 0.0972, agosto: 0.0931, septiembre: 0.0923, octubre: 0.0896, noviembre: 0.0814, diciembre: 0.0740 };
+    const efficiencyData = { bc: [ { x: 3, y: 40 }, { x: 4, y: 36 }, { x: 6, y: 34 }, { x: 8, y: 31.5 }, { x: 9, y: 30 }, { x: 10, y: 28.2 }, { x: 11, y: 26.5 }, { x: 12, y: 25.8 }, { x: 14, y: 25.1 }, { x: 15, y: 24 }, { x: 17, y: 23.5 }, { x: 18, y: 23.1 }, { x: 20, y: 22.8 }, { x: 22, y: 22.5 }, { x: 23, y: 22.3 }, { x: 25, y: 22.1 }, { x: 27, y: 21.9 }, { x: 28, y: 21.8 }, { x: 30, y: 21.6 }, { x: 32, y: 21.5 }, { x: 33, y: 21.4 } ], scm: [ { x: 2, y: 11.55 }, { x: 3, y: 9.02 }, { x: 4, y: 7.26 }, { x: 6, y: 6.16 }, { x: 8, y: 5.61 }, { x: 10, y: 5.28 }, { x: 14, y: 4.95 }, { x: 17, y: 4.84 }, { x: 21, y: 4.73 }, { x: 25, y: 4.62 }, { x: 30, y: 4.4 }, { x: 60, y: 4.4 } ], traditional: [ { x: 2, y: 11.8 }, { x: 5, y: 9 }, { x: 10, y: 7.8 }, { x: 20, y: 7.2 }, { x: 30, y: 7 }, { x: 50, y: 6.9 } ] };
 
     // --- LÓGICA PRINCIPAL DE LA APP ---
     const handleMetodoCalculoChange = () => {
@@ -120,6 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const updateComparison = () => {
+        // --- 1. CÁLCULO DE PERSONAS ---
         let totalPersonas = 0;
         if (metodoCalculoSelect.value === 'departamentos') {
             updateTotals();
@@ -128,6 +120,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             totalPersonas = parseFloat(inputTotalPersonas.value) || 0;
         }
         
+        // --- 2. OBTENCIÓN DE PARÁMETROS ---
         const acumulacionIngresada = parseFloat(acumulacionIngresadaInput.value) || 0;
         const { eficiencia, usoAcumulador, tempFria, tempAcumulacion, tempConsumo } = params;
         const calorEspecificoAgua = 4.186;
@@ -148,6 +141,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             potenciaTotalDisplaySpan.textContent = pBC + pRE;
         }
 
+        // --- 3. CÁLCULOS PARA TARJETAS DE INFO ---
         const duracionPuntaHoras = params.horaPuntaFin - params.horaPuntaInicio;
         if (duracionPuntaHoras > 0 && tipoSistema !== 'sala_calderas') {
             const duracionPuntaSegundos = duracionPuntaHoras * 3600;
@@ -166,6 +160,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         produccionContinuaTempSpan.textContent = tempConsumo;
         produccionContinuaValorSpan.textContent = litrosPorMinuto_seleccionado.toFixed(2);
         
+        // --- 4. CÁLCULOS DE CONSUMO Y COSTOS ---
+        const dailyM3 = (totalPersonas * params.litrosPersonaDia) / 1000;
+        const diasEnJulio = 31;
+        const consumoMensualTotalJulio = (dailyM3 * 1000) * diasEnJulio;
+        const consumoAnualTotalLitros = (consumoMensualDistribucion.julio > 0) ? (consumoMensualTotalJulio / consumoMensualDistribucion.julio) : 0;
+        const consumoAnualTotalM3 = consumoAnualTotalLitros / 1000;
+        
+        let ratioEsperado = 0;
+        let costoACS = 0;
+        let ratioUnit = '';
+        if (tipoSistema === 'sala_calderas') {
+            ratioEsperado = interpolate(dailyM3, efficiencyData.scm);
+            costoACS = ratioEsperado * params.valorGas;
+            ratioUnit = 'm³ gas/m³';
+        } else {
+            ratioEsperado = interpolate(dailyM3, efficiencyData.bc);
+            costoACS = ratioEsperado * params.valorKwh;
+            ratioUnit = 'kWh/m³';
+        }
+        const costoAnual = costoACS * consumoAnualTotalM3;
+
+        consumoDiarioValorSpan.textContent = dailyM3.toFixed(2);
+        ratioEsperadoValorSpan.textContent = `${ratioEsperado.toFixed(2)} ${ratioUnit}`;
+        costoAcsValorSpan.textContent = `$${Math.round(costoACS).toLocaleString('es-CL')}`;
+        costoAnualValorSpan.textContent = `$${Math.round(costoAnual).toLocaleString('es-CL')}`;
+
+        // --- 5. CÁLCULOS PARA TABLA DE RESULTADOS ---
         resultadoTableBody.innerHTML = '';
         const demanda = demandaData[params.demandaGuia];
         const peakTimes = { "Peak 5 min": "5min", "Peak 15 min": "15min", "Peak 30 min": "30min", "Peak 60 min": "60min", "Peak 120 min": "120min", "Peak 180 min": "180min", "Diario Promedio": "diarioAvg", "Diario Máximo": "diarioMax" };
@@ -203,7 +224,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             createResultRow(resultadoTableBody, label, volumenRequerido, volumenProporcionado, boetekValue, volumenBoetek, capacidadModoFalla, estadoFalla);
         }
 
-        updateCharts(totalPersonas);
+        // --- 6. ACTUALIZACIÓN DE GRÁFICOS ---
+        updateCharts(totalPersonas, dailyM3, consumoAnualTotalM3, ratioEsperado);
     };
 
     const createResultRow = (tbody, param, requerido, ingresado, boetekValue, volumenBoetek, capacidadFalla, estadoFalla) => {
@@ -225,7 +247,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                          ${fallaCellHtml}
                          ${estadoFallaCellHtml}`;
     };
-
+    
     const handleSistemaChange = () => {
         const tipoSistema = tipoSistemaSelect.value;
         const esBombaDeCalor = tipoSistema !== 'sala_calderas';
@@ -265,7 +287,9 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tempAcumulacion: parseFloat(document.getElementById('edit-temp-acumulacion').value),
                 tempConsumo: parseFloat(document.getElementById('edit-temp-consumo').value),
                 horaPuntaInicio: parseInt(document.getElementById('edit-hora-punta-inicio').value, 10),
-                horaPuntaFin: parseInt(document.getElementById('edit-hora-punta-fin').value, 10)
+                horaPuntaFin: parseInt(document.getElementById('edit-hora-punta-fin').value, 10),
+                valorGas: parseFloat(document.getElementById('edit-valor-gas').value),
+                valorKwh: parseFloat(document.getElementById('edit-valor-kwh').value)
             };
             
             document.getElementById('view-demanda-guia').textContent = demandaGuiaMap[params.demandaGuia];
@@ -277,6 +301,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('view-temp-consumo').textContent = `${params.tempConsumo}°C`;
             document.getElementById('view-hora-punta-inicio').textContent = formatHour(params.horaPuntaInicio);
             document.getElementById('view-hora-punta-fin').textContent = formatHour(params.horaPuntaFin);
+            document.getElementById('view-valor-gas').textContent = `$${params.valorGas.toLocaleString('es-CL')}`;
+            document.getElementById('view-valor-kwh').textContent = `$${params.valorKwh.toLocaleString('es-CL')}`;
 
             viewMode.style.display = 'block';
             editMode.style.display = 'none';
@@ -291,6 +317,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('edit-temp-consumo').value = params.tempConsumo;
             document.getElementById('edit-hora-punta-inicio').value = params.horaPuntaInicio;
             document.getElementById('edit-hora-punta-fin').value = params.horaPuntaFin;
+            document.getElementById('edit-valor-gas').value = params.valorGas;
+            document.getElementById('edit-valor-kwh').value = params.valorKwh;
 
             viewMode.style.display = 'none';
             editMode.style.display = 'block';
@@ -307,7 +335,80 @@ document.addEventListener('DOMContentLoaded', async () => {
         return hourlyConsumption;
     };
     
-    const updateCharts = (totalPersonas) => {
+    // --- LÓGICA DE GRÁFICOS ---
+    const interpolate = (x, dataPoints) => {
+        const sortedPoints = dataPoints.slice().sort((a, b) => a.x - b.x);
+        if (x <= sortedPoints[0].x) return sortedPoints[0].y;
+        if (x >= sortedPoints[sortedPoints.length - 1].x) return sortedPoints[sortedPoints.length - 1].y;
+
+        let p1, p2;
+        for (let i = 0; i < sortedPoints.length - 1; i++) {
+            if (x >= sortedPoints[i].x && x <= sortedPoints[i + 1].x) {
+                p1 = sortedPoints[i];
+                p2 = sortedPoints[i + 1];
+                break;
+            }
+        }
+        if (!p1) return sortedPoints[sortedPoints.length - 1].y; // Fallback
+        return p1.y + ((x - p1.x) / (p2.x - p1.x)) * (p2.y - p1.y);
+    };
+
+    const updateEfficiencyChart = (dailyM3, ratioEsperado) => {
+        const tipoSistema = tipoSistemaSelect.value;
+        let datasets = [], yAxisTitle = '', chartTitle = '';
+
+        if (tipoSistema === 'sala_calderas') {
+            yAxisTitle = 'm³ Gas / m³ H₂O';
+            chartTitle = 'Eficiencia Sala de Calderas';
+            datasets = [
+                { label: 'SCM Boetek', data: efficiencyData.scm, borderColor: 'rgba(0, 86, 179, 1)', tension: 0.1, type: 'line', pointRadius: 0 },
+                { label: 'Sistema Tradicional', data: efficiencyData.traditional, borderColor: 'rgba(108, 117, 125, 1)', tension: 0.1, type: 'line', pointRadius: 0 },
+                { label: 'Punto de Operación', data: [{ x: dailyM3, y: ratioEsperado }], backgroundColor: 'red', type: 'scatter', pointRadius: 6, pointHoverRadius: 8 }
+            ];
+        } else {
+            yAxisTitle = 'kWh / m³ H₂O';
+            chartTitle = 'Eficiencia Bomba de Calor';
+            datasets = [
+                { label: 'Eficiencia BC', data: efficiencyData.bc, borderColor: 'rgba(0, 86, 179, 1)', tension: 0.1, type: 'line', pointRadius: 0 },
+                { label: 'Punto de Operación', data: [{ x: dailyM3, y: ratioEsperado }], backgroundColor: 'red', type: 'scatter', pointRadius: 6, pointHoverRadius: 8 }
+            ];
+        }
+
+        if (efficiencyChartInstance) efficiencyChartInstance.destroy();
+        efficiencyChartInstance = new Chart(efficiencyChartCanvas, {
+            data: { datasets: datasets },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    title: { display: true, text: chartTitle, font: { size: 16 } },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                if (context.parsed.y !== null) {
+                                    label += `(${context.parsed.x.toFixed(2)} m³/día, ${context.parsed.y.toFixed(2)})`;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        type: 'linear', position: 'bottom',
+                        title: { display: true, text: 'Consumo Promedio (m³/día)' }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: yAxisTitle }
+                    }
+                }
+            }
+        });
+    };
+
+    const updateCharts = (totalPersonas, dailyM3, consumoAnualTotalM3, ratioEsperado) => {
         // ---- Gráfico Perfil Diario (L/min) y Consumo por Hora (L) ----
         if (monitoringData.length > 0) {
             const tipoSistema = tipoSistemaSelect.value;
@@ -400,20 +501,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
         
         // ---- Gráfico de Consumo Mensual (m³) ----
-        const diasEnJulio = 31;
-        const consumoDiarioTotalJulio = totalPersonas * params.litrosPersonaDia;
-        const consumoMensualTotalJulio = consumoDiarioTotalJulio * diasEnJulio;
-        
-        const consumoAnualTotalLitros = (consumoMensualDistribucion.julio > 0) ? (consumoMensualTotalJulio / consumoMensualDistribucion.julio) : 0;
-        
-        const consumoAnualTotalM3 = consumoAnualTotalLitros / 1000;
-        consumoAnualValorSpan.textContent = Math.round(consumoAnualTotalM3).toLocaleString('es-CL');
-
         const monthlyLabels = Object.keys(consumoMensualDistribucion).map(m => m.charAt(0).toUpperCase() + m.slice(1));
-        const monthlyDataM3 = Object.values(consumoMensualDistribucion).map(dist => {
-            const consumoMensualLitros = consumoAnualTotalLitros * dist;
-            return consumoMensualLitros / 1000;
-        });
+        const monthlyDataM3 = Object.values(consumoMensualDistribucion).map(dist => consumoAnualTotalM3 * dist);
 
         if (monthlyChartInstance) monthlyChartInstance.destroy();
         monthlyChartInstance = new Chart(monthlyChartCanvas, {
@@ -460,15 +549,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                 }
             }
         });
+
+        // Llamada a la nueva función del gráfico de eficiencia
+        updateEfficiencyChart(dailyM3, ratioEsperado);
     };
     
+    // --- INICIALIZACIÓN Y EVENT LISTENERS ---
     try {
         const response = await fetch('Data/datos_caudal.json');
         if (!response.ok) throw new Error('No se pudieron cargar los datos de monitoreo.');
         monitoringData = await response.json();
     } catch (error) {
         console.error('Error al cargar datos_caudal.json:', error);
-        alert('No se pudo cargar el perfil de consumo para los gráficos de L/min y L/h. El gráfico de consumo mensual funcionará correctamente.');
+        alert('No se pudo cargar el perfil de consumo para los gráficos de L/min y L/h. El resto de la aplicación funcionará correctamente.');
     } finally {
         const allInputs = document.querySelectorAll('#calculadora-form input, #calculadora-form select');
         allInputs.forEach(input => input.addEventListener('input', updateComparison));
@@ -478,17 +571,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         saveBtn.addEventListener('click', () => toggleEditMode(true));
         tipoSistemaSelect.addEventListener('change', handleSistemaChange);
         
-        tabLine.addEventListener('click', () => {
-            tabLine.classList.add('active'); tabBar.classList.remove('active'); tabMonthly.classList.remove('active');
-            lineChartContainer.style.display = 'block'; barChartContainer.style.display = 'none'; monthlyChartContainer.style.display = 'none';
-        });
-        tabBar.addEventListener('click', () => {
-            tabBar.classList.add('active'); tabLine.classList.remove('active'); tabMonthly.classList.remove('active');
-            barChartContainer.style.display = 'block'; lineChartContainer.style.display = 'none'; monthlyChartContainer.style.display = 'none';
-        });
-        tabMonthly.addEventListener('click', () => {
-            tabMonthly.classList.add('active'); tabLine.classList.remove('active'); tabBar.classList.remove('active');
-            monthlyChartContainer.style.display = 'block'; lineChartContainer.style.display = 'none'; barChartContainer.style.display = 'none';
+        const tabs = [tabLine, tabBar, tabMonthly, tabEfficiency];
+        const containers = [lineChartContainer, barChartContainer, monthlyChartContainer, efficiencyChartContainer];
+
+        tabs.forEach((tab, index) => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                containers.forEach(c => c.style.display = 'none');
+                containers[index].style.display = 'block';
+            });
         });
         
         const initializeApp = () => {
@@ -502,7 +594,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('view-temp-consumo').textContent = `${params.tempConsumo}°C`;
             document.getElementById('view-hora-punta-inicio').textContent = formatHour(params.horaPuntaInicio);
             document.getElementById('view-hora-punta-fin').textContent = formatHour(params.horaPuntaFin);
-            
+            document.getElementById('view-valor-gas').textContent = `$${params.valorGas.toLocaleString('es-CL')}`;
+            document.getElementById('view-valor-kwh').textContent = `$${params.valorKwh.toLocaleString('es-CL')}`;
+
             handleMetodoCalculoChange();
             handleSistemaChange();
             updateComparison(); 

@@ -7,12 +7,13 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <link rel="icon" href="./Images/isotipo_Boetek.ico">
 </head>
 <body>
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.41</span>
+            <span class="version-indicator">v 1.42</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
@@ -143,6 +144,8 @@
                             <tr><td>Temperatura de consumo</td><td id="view-temp-consumo">45°C</td></tr>
                             <tr class="fila-hora-punta"><td>Hora Punta Inicio</td><td id="view-hora-punta-inicio">19:00</td></tr>
                             <tr class="fila-hora-punta"><td>Hora Punta Fin</td><td id="view-hora-punta-fin">21:00</td></tr>
+                            <tr><td>Valor m³ Gas</td><td id="view-valor-gas">$1.250</td></tr>
+                            <tr><td>Valor kWh Electricidad</td><td id="view-valor-kwh">$200</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -192,6 +195,14 @@
                                 <td>Hora Punta Fin</td>
                                 <td><input type="number" id="edit-hora-punta-fin" value="21" min="0" max="23">:00</td>
                             </tr>
+                             <tr>
+                                <td>Valor m³ Gas</td>
+                                <td><input type="number" id="edit-valor-gas" value="1250"></td>
+                            </tr>
+                            <tr>
+                                <td>Valor kWh Electricidad</td>
+                                <td><input type="number" id="edit-valor-kwh" value="200"></td>
+                            </tr>
                         </tbody>
                     </table>
                     <button type="button" id="save-params-btn">Guardar</button>
@@ -225,6 +236,7 @@
                     <button id="tab-line" class="active">Perfil Diario (L/min)</button>
                     <button id="tab-bar">Consumo por Hora (L)</button>
                     <button id="tab-monthly">Consumo Mensual (m³)</button>
+                    <button id="tab-efficiency">Eficiencia</button>
                 </div>
                 <div id="line-chart-container" class="chart-container">
                     <canvas id="lineChart"></canvas>
@@ -234,6 +246,9 @@
                 </div>
                 <div id="monthly-chart-container" class="chart-container" style="display: none;">
                     <canvas id="monthlyChart"></canvas>
+                </div>
+                <div id="efficiency-chart-container" class="chart-container" style="display: none;">
+                    <canvas id="efficiencyChart"></canvas>
                 </div>
             </div>
 
@@ -249,8 +264,11 @@
                     <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
                 </div>
                 <div class="info-box" id="consumo-anual-box">
-                    <h4>Consumo Anual</h4>
-                    <p><span id="consumo-anual-valor">0</span> m³</p>
+                    <h4>Consumo y Costos</h4>
+                    <p>Consumo Diario: <span id="consumo-diario-valor">0</span> m³</p>
+                    <p>Ratio Esperado: <span id="ratio-esperado-valor">0</span></p>
+                    <p>Costo ACS: <span id="costo-acs-valor">0</span> $/m³</p>
+                    <p>Costo Anual: <span id="costo-anual-valor">0</span></p>
                 </div>
             </div>
         </div>
