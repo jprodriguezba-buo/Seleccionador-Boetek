@@ -14,3 +14,7 @@
 1.42
 - se agrega favicon Boetek
 - se agrega grafico eficiencia, punto de eficiencia y consumo $ estimado.
+1.5
+- se agrega consumo anual
+- se agrega tabla con analisis comparativo de tecnologias, se cambian info-boxes por seccion de analisis resultados
+- se agrega comparacion en hora punta

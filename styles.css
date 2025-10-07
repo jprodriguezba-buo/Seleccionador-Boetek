@@ -33,264 +33,6 @@ body {
 /* Contenedor para el logo y la versión */
 .logo-container {
     display: flex;
-    align-items: flex-end; /* Alinea los items en la parte inferior */
-    gap: 10px; /* Espacio entre el logo y el texto */
-}
-
-#logobtk {
-    width: 180px;
-    height: auto;
-}
-
-.version-indicator {
-    font-size: 0.9em;
-    color: #6c757d; /* Un color gris sutil */
-    font-weight: bold;
-    padding-bottom: 5px; /* Ajuste para alinear con la base del logo */
-}
-
-h1, h2, h3, h4 {
-    color: #333;
-}
-h1 {
-    text-align: center;
-    color: #0056b3;
-    margin: 0;
-}
-h2 {
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-    margin-top: 0;
-}
-h3 {
-    margin-top: 0;
-}
-
-#calculadora-form {
-    flex: 1;
-    min-width: 400px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.resultados-wrapper {
-    flex: 2;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    min-width: 500px;
-}
-
-.resultados-main, .chart-section, .info-box {
-    padding: 20px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
-}
-
-th, td {
-    padding: 4px 4px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-}
-#depto-table tfoot td {
-    font-weight: bold;
-}
-
-.form-group {
-    margin-bottom: 15px;
-}
-
-label {
-    display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
-}
-
-input[type="number"], select {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-#depto-table input[type="number"] {
-    width: 80%;
-    text-align: right;
-}
-
-#param-edit-mode input[type="number"] {
-    width: 60px;
-    display: inline-block;
-}
-
-.param-fijos {
-    margin-bottom: 20px;
-    padding: 15px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-}
-
-.param-fijos .header{
-    border-bottom: none;
-    padding: 0;
-    margin: 0;
-    align-items: center;
-}
-
-.status-ok {
-    color: #28a745;
-    font-weight: bold;
-}
-
-.status-insuficiente {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.monitoreo-col {
-    background-color: #e8f5e9;
-}
-.monitoreo-insuficiente {
-    background-color: #f8d7da;
-}
-
-#potencia-bomba-calor-group p {
-    margin-top: 0;
-    font-size: 0.9em;
-    color: #333;
-}
-
-/* Estilos para la sección de gráficos con pestañas */
-.chart-tabs {
-    margin-bottom: 15px;
-    border-bottom: 2px solid #dee2e6;
-}
-
-.chart-tabs button {
-    background-color: transparent;
-    border: none;
-    padding: 10px 15px;
-    cursor: pointer;
-    font-size: 1em;
-    border-bottom: 2px solid transparent;
-    margin-bottom: -2px; /* Alinea con el borde inferior del contenedor */
-    color: #0056b3;
-}
-
-.chart-tabs button.active {
-    border-color: #0056b3;
-    font-weight: bold;
-}
-
-.chart-container {
-    position: relative;
-    height: 350px;
-    width: 100%;
-}
-
-/* Controla la visibilidad de la nueva columna de modo falla */
-.col-falla {
-    display: none; /* Oculta la columna por defecto */
-}
-
-/* Cuando la tabla tenga esta clase, la columna se mostrará */
-table.falla-re-active .col-falla {
-    display: table-cell;
-}
-
-
-/* --- INICIAN NUEVAS REGLAS PARA LA TABLA DE RESULTADOS --- */
-
-/* 1. Asigna un layout fijo a la tabla para controlar anchos */
-#resultado-table {
-    table-layout: fixed;
-}
-
-/* 2. Estilos base para todas las celdas de la tabla */
-#resultado-table th,
-#resultado-table td {
-    padding: 3px 6px;
-    font-size: 13px;
-    vertical-align: middle;
-    word-wrap: break-word; /* Ayuda a romper palabras largas si es necesario */
-}
-
-/* 3. Celdas del cuerpo (datos): una sola línea y con puntos suspensivos si se corta */
-#resultado-table td {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/* 4. Alineación del texto */
-#resultado-table td:not(:first-child),
-#resultado-table th:not(:first-child) {
-    text-align: right;
-}
-
-#resultado-table th:nth-child(4), /* Columna Estado */
-#resultado-table td:nth-child(4),
-#resultado-table th:nth-child(6), /* Columna % Sobredimensionamiento */
-#resultado-table td:nth-child(6),
-#resultado-table th:nth-child(8), /* Columna Estado Falla */
-#resultado-table td:nth-child(8) {
-    text-align: center;
-}
-
-/* --- NUEVOS ESTILOS PARA TARJETAS DE INFO --- */
-.info-boxes-wrapper {
-    display: flex;
-    gap: 15px;
-}/* Elimina flechas en input type number */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-body {
-    font-family: Arial, sans-serif;
-    font-size: 14px;
-    margin: 20px auto;
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    max-width: 1200px;
-    background-color: #f9f9f9;
-}
-
-.main-container {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-}
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 2px solid #0056b3;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-}
-
-/* Contenedor para el logo y la versión */
-.logo-container {
-    display: flex;
     align-items: flex-end;
     gap: 10px;
 }
@@ -350,7 +92,7 @@ h3 {
     min-width: 500px;
 }
 
-.resultados-main, .chart-section, .info-box {
+.resultados-main, .chart-section, .info-box, .cost-analysis-section {
     padding: 20px;
     background-color: white;
     border: 1px solid #ddd;
@@ -421,7 +163,6 @@ input[type="number"], select {
     margin-bottom: 10px;
 }
 
-/* Override para el H2 dentro del header de "Datos Fijos" */
 .param-fijos .header h2 {
     margin: 0;
     padding: 0;
@@ -438,44 +179,76 @@ input[type="number"], select {
     font-weight: bold;
 }
 
-/* ... (resto de los estilos sin cambios) ... */
-
-/* --- ESTILOS PARA LA NUEVA TABLA DE PARÁMETROS (v1.41) --- */
-.compact-table {
-    width: 100%;
-    margin-bottom: 20px;
+.chart-tabs {
+    margin-bottom: 15px;
+    border-bottom: 2px solid #dee2e6;
 }
 
-.compact-table td {
-    padding: 4px;
+.chart-tabs button {
+    background-color: transparent;
+    border: none;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1em;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    color: #0056b3;
+}
+
+.chart-tabs button.active {
+    border-color: #0056b3;
+    font-weight: bold;
+}
+
+.chart-container {
+    position: relative;
+    height: 350px;
+    width: 100%;
+}
+
+.col-falla {
+    display: none;
+}
+
+table.falla-re-active .col-falla {
+    display: table-cell;
+}
+
+#resultado-table {
+    table-layout: fixed;
+}
+
+#resultado-table th,
+#resultado-table td {
+    padding: 3px 6px;
+    font-size: 13px;
     vertical-align: middle;
+    word-wrap: break-word;
 }
 
-.compact-table td:first-child {
-    font-weight: bold;
-    width: 60%;
+#resultado-table td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.compact-table input {
+#resultado-table td:not(:first-child),
+#resultado-table th:not(:first-child) {
     text-align: right;
-    width: 100%;
 }
 
-.compact-table select {
-    text-align: right;
-    text-align-last: right;
-    width: 100%;
-    padding-right: 5px;
+#resultado-table th:nth-child(4),
+#resultado-table td:nth-child(4),
+#resultado-table th:nth-child(6),
+#resultado-table td:nth-child(6),
+#resultado-table th:nth-child(8),
+#resultado-table td:nth-child(8) {
+    text-align: center;
 }
 
-.label-strong {
-    font-weight: bold;
-}
-
-.value-strong {
-    text-align: right;
-    font-weight: bold;
-    padding-right: 8px !important;
+.info-boxes-wrapper {
+    display: flex;
+    gap: 15px;
 }
 
 .info-box {
@@ -496,7 +269,6 @@ input[type="number"], select {
     font-weight: bold;
 }
 
-/* --- ESTILOS PARA LA NUEVA TABLA DE PARÁMETROS (v1.41) --- */
 .compact-table {
     width: 100%;
     margin-bottom: 20px;
@@ -532,4 +304,39 @@ input[type="number"], select {
     text-align: right;
     font-weight: bold;
     padding-right: 8px !important;
+}
+
+/* Estilos para las nuevas tablas de costos */
+#comparative-costs-table td:not(:first-child),
+#selection-costs-table td:not(:first-child) {
+    text-align: left;
+   
+}
+.info-boxes-wrapper {
+    display: flex;
+    gap: 15px;
+}
+
+.info-box {
+    flex: 1;
+    text-align: center;
+}
+
+/* NUEVA CLASE PARA EL CONTENIDO DE LAS PESTAÑAS */
+.info-box-content {
+    text-align: center;
+    padding: 20px 0;
+}
+
+.info-box h4, .info-box-content h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+.info-box p, .info-box-content p {
+    margin: 5px 0;
+    font-size: 1em;
+}
+
+.info-box span, .info-box-content span {
+    font-weight: bold;
 }

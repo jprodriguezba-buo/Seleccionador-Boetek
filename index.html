@@ -13,7 +13,7 @@
     <div class="header">
         <div class="logo-container">
             <img id="logobtk" src="./Images/Boetek PNG.png" alt="Logo Boetek">
-            <span class="version-indicator">v 1.42</span>
+            <span class="version-indicator">v 1.5</span>
         </div>
         <h1>Calculadora de ACS</h1>
     </div>
@@ -212,7 +212,7 @@
 
         <div class="resultados-wrapper" id="resultados">
             <div class="resultados-main">
-                <h3>Resultados de la Comparación</h3>
+                <h3>Resultados de Selección</h3>
                 <table id="resultado-table">
                     <thead>
                         <tr>
@@ -230,7 +230,145 @@
                         </tbody>
                 </table>
             </div>
+            <div class="cost-analysis-section">
+                <h3>Análisis de Resultados</h3>
+                <div class="chart-tabs">
+                    <button id="tab-comparative" class="active">Tabla Comparativa</button>
+                    <button id="tab-selection">Resultados Selección</button>
+                    <button id="tab-peak-hours">Horario Punta</button>
+                    <button id="tab-instant-flow">Caudales Instantáneos</button>
+                </div>
 
+                <div id="comparative-table-container">
+                    <table id="comparative-costs-table">
+                        <thead>
+                            <tr>
+                                <th>Parámetro</th>
+                                <th>SCM (a Gas)</th>
+                                <th>Bomba de Calor</th>
+                                <th>Sistema Tradicional</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>M3 ACS anual</td>
+                                <td id="comp-scm-anual-m3"></td>
+                                <td id="comp-bc-anual-m3"></td>
+                                <td id="comp-trad-anual-m3"></td>
+                            </tr>
+                            <tr>
+                                <td>Prom M3 Dia</td>
+                                <td id="comp-scm-diario-m3"></td>
+                                <td id="comp-bc-diario-m3"></td>
+                                <td id="comp-trad-diario-m3"></td>
+                            </tr>
+                            <tr>
+                                <td>Ratio de generación</td>
+                                <td id="comp-scm-ratio"></td>
+                                <td id="comp-bc-ratio"></td>
+                                <td id="comp-trad-ratio"></td>
+                            </tr>
+                            <tr>
+                                <td>Valor m³ ACS</td>
+                                <td id="comp-scm-costo-m3"></td>
+                                <td id="comp-bc-costo-m3"></td>
+                                <td id="comp-trad-costo-m3"></td>
+                            </tr>
+                            <tr>
+                                <td>Costo Anual ACS</td>
+                                <td id="comp-scm-costo-anual"></td>
+                                <td id="comp-bc-costo-anual"></td>
+                                <td id="comp-trad-costo-anual"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="selection-table-container" style="display: none;">
+                    <table id="selection-costs-table">
+                        <thead>
+                            <tr>
+                                <th>Parámetro</th>
+                                <th id="selection-header"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                             <tr>
+                                <td>M3 ACS anual</td>
+                                <td id="sel-anual-m3"></td>
+                            </tr>
+                            <tr>
+                                <td>Prom M3 Dia</td>
+                                <td id="sel-diario-m3"></td>
+                            </tr>
+                            <tr>
+                                <td>Ratio de generación</td>
+                                <td id="sel-ratio"></td>
+                            </tr>
+                            <tr>
+                                <td>Valor m³ ACS</td>
+                                <td id="sel-costo-m3"></td>
+                            </tr>
+                            <tr>
+                                <td>Costo Anual ACS</td>
+                                <td id="sel-costo-anual"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="peak-hours-container" style="display: none;">
+                    <table id="peak-hours-table">
+                        <thead>
+                            <tr>
+                                <th>Escenario de Suministro</th>
+                                <th>Consumo Hora Punta</th>
+                                <th>Cumple</th>
+                                <th>Generación Hora Punta</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Suministro con BC al 100%</td>
+                                <td class="consumo-punta-cell"></td>
+                                <td id="validador-punta-100"></td>
+                                <td id="gen-punta-100"></td>
+                            </tr>
+                            <tr>
+                                <td>Suministro con BC al 75%</td>
+                                <td class="consumo-punta-cell"></td>
+                                <td id="validador-punta-75"></td>
+                                <td id="gen-punta-75"></td>
+                            </tr>
+                             <tr>
+                                <td>Suministro con BC al 50%</td>
+                                <td class="consumo-punta-cell"></td>
+                                <td id="validador-punta-50"></td>
+                                <td id="gen-punta-50"></td>
+                            </tr>
+                             <tr>
+                                <td>Suministro con BC al 25%</td>
+                                <td class="consumo-punta-cell"></td>
+                                <td id="validador-punta-25"></td>
+                                <td id="gen-punta-25"></td>
+                            </tr>
+                            <tr>
+                                <td>Suministro sin BC (solo acumulación)</td>
+                                <td class="consumo-punta-cell"></td>
+                                <td id="validador-punta-0"></td>
+                                <td id="gen-punta-0"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="instant-flow-container" class="info-box-content" style="display: none;">
+                    <h4>Caudales Instantáneos</h4>
+                    <p>Caudal a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
+                    <p>Caudal a 60°C: <span id="produccion-continua-60c"></span> L/min</p>
+                    <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
+                </div>
+            </div>
             <div class="chart-section">
                 <div class="chart-tabs">
                     <button id="tab-line" class="active">Perfil Diario (L/min)</button>
@@ -252,25 +390,7 @@
                 </div>
             </div>
 
-            <div class="info-boxes-wrapper">
-                <div class="info-box" id="consumo-punta-box">
-                    <h4>Horario Punta</h4>
-                    <p>Consumo: <span id="consumo-punta-valor"></span> L</p>
-                    <p>Generación: <span id="generacion-punta-valor"></span> L</p>
-                </div>
-                <div class="info-box" id="produccion-continua-box">
-                    <h4>Caudales Instantáneos</h4>
-                    <p>Caudal a 50°C: <span id="produccion-continua-50c"></span> L/min</p>
-                    <p>Caudal a Temp. Consumo (<span id="prod-continua-temp">45</span>°C): <span id="produccion-continua-valor"></span> L/min</p>
-                </div>
-                <div class="info-box" id="consumo-anual-box">
-                    <h4>Consumo y Costos</h4>
-                    <p>Consumo Diario: <span id="consumo-diario-valor">0</span> m³</p>
-                    <p>Ratio Esperado: <span id="ratio-esperado-valor">0</span></p>
-                    <p>Costo ACS: <span id="costo-acs-valor">0</span> $/m³</p>
-                    <p>Costo Anual: <span id="costo-anual-valor">0</span></p>
-                </div>
-            </div>
+
         </div>
     </div>
     <script src="app.js"></script>
