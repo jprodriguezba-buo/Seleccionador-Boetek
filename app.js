@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         tempAcumulacion: 45, 
         tempConsumo: 45,
         horaPuntaInicio: 19,
-        horaPuntaFin: 21,
+        horaPuntaFin: 23,
         valorGas: 1250,
         valorKwh: 150
     };
