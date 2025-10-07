@@ -18,3 +18,5 @@
 - se agrega consumo anual
 - se agrega tabla con analisis comparativo de tecnologias, se cambian info-boxes por seccion de analisis resultados
 - se agrega comparacion en hora punta
+1.51
+- se corrije calculo de consumo promedio diario, considerando estacionalidad.

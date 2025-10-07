@@ -179,8 +179,30 @@ document.addEventListener('DOMContentLoaded', async () => {
             potenciaTotalDisplaySpan.textContent = pBC + pRE;
         }
 
-        // 3. CÁLCULOS PARA PESTAÑAS DE OPERACIÓN
-        // 3.1 Consumo y Generación en Hora Punta
+        // 3. CÁLCULO DE CONSUMO Y COSTOS (LÓGICA CORREGIDA)
+        const consumoDiarioBaseLitros = totalPersonas * params.litrosPersonaDia;
+        const consumoMensualJulioLitros = consumoDiarioBaseLitros * 31; // Usando 31 días para Julio como referencia
+        const consumoAnualTotalLitros = (consumoMensualDistribucion.julio > 0) ? (consumoMensualJulioLitros / consumoMensualDistribucion.julio) : 0;
+        const consumoAnualTotalM3 = consumoAnualTotalLitros / 1000;
+        const dailyM3 = consumoAnualTotalM3 / 365; // <-- ¡CÁLCULO CORREGIDO DEL PROMEDIO DIARIO!
+        
+        // Valores SCM
+        const scmRatio = interpolate(dailyM3, efficiencyData.scm);
+        const scmCostoM3 = scmRatio * params.valorGas;
+        const scmCostoAnual = scmCostoM3 * consumoAnualTotalM3;
+        
+        // Valores Bomba de Calor
+        const bcRatio = interpolate(dailyM3, efficiencyData.bc);
+        const bcCostoM3 = bcRatio * params.valorKwh;
+        const bcCostoAnual = bcCostoM3 * consumoAnualTotalM3;
+
+        // Valores Sistema Tradicional
+        const traditionalRatio = interpolate(dailyM3, efficiencyData.traditional);
+        const traditionalCostoM3 = traditionalRatio * params.valorGas;
+        const traditionalCostoAnual = traditionalCostoM3 * consumoAnualTotalM3;
+
+        // 4. CÁLCULOS PARA PESTAÑAS DE OPERACIÓN
+        // 4.1 Consumo y Generación en Hora Punta
         let consumoPuntaLts = 0;
         if (monitoringData.length > 0 && tipoSistema !== 'sala_calderas') {
             const personasBase = 769.5;
@@ -232,7 +254,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
         }
 
-        // 3.2 Caudales Instantáneos
+        // 4.2 Caudales Instantáneos
         const litrosPorMinuto_50c = (potenciaParaCalculo * eficiencia * 60) / (calorEspecificoAgua * (50 - tempFria));
         produccionContinua50cSpan.textContent = litrosPorMinuto_50c.toFixed(2);
         
@@ -242,28 +264,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const litrosPorMinuto_seleccionado = (potenciaParaCalculo * eficiencia * 60) / (calorEspecificoAgua * (tempConsumo - tempFria));
         produccionContinuaTempSpan.textContent = tempConsumo;
         produccionContinuaValorSpan.textContent = litrosPorMinuto_seleccionado.toFixed(2);
-        
-        // 4. CÁLCULOS DE CONSUMO Y COSTOS PARA TODOS LOS SISTEMAS
-        const dailyM3 = (totalPersonas * params.litrosPersonaDia) / 1000;
-        const diasEnJulio = 31;
-        const consumoMensualTotalJulio = (dailyM3 * 1000) * diasEnJulio;
-        const consumoAnualTotalLitros = (consumoMensualDistribucion.julio > 0) ? (consumoMensualTotalJulio / consumoMensualDistribucion.julio) : 0;
-        const consumoAnualTotalM3 = consumoAnualTotalLitros / 1000;
-        
-        // Valores SCM
-        const scmRatio = interpolate(dailyM3, efficiencyData.scm);
-        const scmCostoM3 = scmRatio * params.valorGas;
-        const scmCostoAnual = scmCostoM3 * consumoAnualTotalM3;
-        
-        // Valores Bomba de Calor
-        const bcRatio = interpolate(dailyM3, efficiencyData.bc);
-        const bcCostoM3 = bcRatio * params.valorKwh;
-        const bcCostoAnual = bcCostoM3 * consumoAnualTotalM3;
-
-        // Valores Sistema Tradicional
-        const traditionalRatio = interpolate(dailyM3, efficiencyData.traditional);
-        const traditionalCostoM3 = traditionalRatio * params.valorGas;
-        const traditionalCostoAnual = traditionalCostoM3 * consumoAnualTotalM3;
 
         // 5. LLENAR TABLA COMPARATIVA
         const formattedAnualM3 = `${Math.round(consumoAnualTotalM3).toLocaleString('es-CL')} m³`;
