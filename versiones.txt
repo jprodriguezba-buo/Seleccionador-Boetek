@@ -27,4 +27,6 @@
 - se mejora estructura de archivo app.js
 1.6
 - se incorpora reporte pdf en su primera version
+1.61
+- se mejora sustancialmente reporte pdf, incorporando imagenes, revisando formato tablas, etc.
 
