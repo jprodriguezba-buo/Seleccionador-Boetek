@@ -12,23 +12,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const tablaEstilos = {
         headStyles: { 
+            fillColor: [242, 242, 242],
             textColor: [40, 40, 40],
             fontStyle: 'bold',
             fontSize: 9,
             halign: 'left',
-            lineWidth: { top: 0, right: 0, bottom: 0.5, left: 0 },
-            lineColor: [128, 128, 128],
-            cellPadding: 2
+            lineWidth: { bottom: 0.5, top: 0, left: 0, right: 0 },
+            lineColor: [220, 220, 220],
+            minCellHeight: 6,
+            cellPadding: 1
         },
         bodyStyles: { 
-            fontSize: 9,
+            fontSize: 8.5,
             textColor: [40, 40, 40],
             lineWidth: 0,
+            lineColor: [220, 220, 220],
+            minCellHeight: 6,
             cellPadding: 1
+        },
+        alternateRowStyles: {
+            fillColor: [249, 249, 249]
         }
     };
-
-    // --- FUNCIÓN PARA AGREGAR TÍTULOS DE SECCIÓN --- //
+    
+    // --- FUNCIONES AUXILIARES PARA EL PDF --- //
     const addTitle = (doc, title, yPos) => {
         doc.setFontSize(tituloEstilos.fontSize);
         doc.setFont(tituloEstilos.fontFamily, tituloEstilos.fontStyle);
@@ -36,16 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
         doc.text(title, 14, yPos);
     };
 
-    // --- FUNCIÓN PARA AGREGAR LÍNEA DE SEPARACIÓN --- //
     const addSectionSeparator = (doc, yPos, margin, pageWidth) => {
         doc.setDrawColor(200, 200, 200);
         doc.setLineWidth(0.3);
         doc.line(margin, yPos + 2, pageWidth - margin, yPos + 2);
     };
 
-    /**
-     * NUEVA FUNCIÓN: Carga una imagen desde una URL y la convierte a Base64.
-     */
     const imageToBase64 = (url) => {
         return new Promise((resolve, reject) => {
             const img = new Image();
@@ -63,19 +66,73 @@ document.addEventListener('DOMContentLoaded', () => {
             img.src = url;
         });
     };
-
-    // --- FUNCIONES AUXILIARES (Sin cambios, pero asegúrate de tenerlas) --- //
-    const addElementToPdf = async (doc, elementId, currentY) => { const element = document.getElementById(elementId); if (!element) { console.warn(`Elemento HTML "${elementId}" no encontrado.`); return currentY; } const canvas = await html2canvas(element, { scale: 2, logging: false, useCORS: true }); const imgData = canvas.toDataURL('image/png'); return addImageToPage(doc, imgData, currentY, canvas.width, canvas.height); };
-    const addChartToPdf = (doc, chartName, currentY) => { const imgData = window.getChartImage(chartName); if (!imgData) { console.warn(`Gráfico "${chartName}" no encontrado.`); return currentY; } return addImageToPage(doc, imgData, currentY, 1000, 500, 0.7); };
-    const addImageToPage = (doc, imgData, currentY, canvasWidth = 1000, canvasHeight = 500, scaleFactor = 1.0) => { const pageWidth = doc.internal.pageSize.getWidth(); const pageHeight = doc.internal.pageSize.getHeight(); const margin = 14; const imgWidth = pageWidth - (margin * 2); const imgHeight = ((canvasHeight * imgWidth) / canvasWidth) * scaleFactor; if (currentY + imgHeight > pageHeight - margin) { doc.addPage(); currentY = margin + 10; } doc.addImage(imgData, 'PNG', margin, currentY, imgWidth, imgHeight); return currentY + imgHeight + 10; };
-
-    const generarPDF = async () => {
-        // --- CONSTANTES DE PÁGINA ---
+   
+    // AHORA ES UNA FUNCIÓN ASÍNCRONA PORQUE ESPERA LA IMAGEN DEL GRÁFICO
+    const addChartToPdf = async (
+        doc, 
+        chartName, 
+        currentY, 
+        format = 'jpeg', 
+        quality = 0.92, 
+        width = 1200, 
+        height = 600, 
+        scaleWidth = 1.0, 
+        scaleHeight = 1.0
+    ) => {
+        // Await espera a que la nueva función 'getChartImage' termine
+        const imgData = await window.getChartImage(chartName, format, quality, width, height);
+        if (!imgData) {
+            console.warn(`Gráfico "${chartName}" no encontrado.`);
+            return currentY;
+        }
+        const imgType = format.toLowerCase() === 'jpeg' ? 'JPEG' : 'PNG';
+        
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const pageHeight = doc.internal.pageSize.getHeight();
         const margin = 14;
-        const pageWidth = 210; // A4 width in mm
+        
+        const maxWidthMM = (pageWidth - margin * 2) * scaleWidth; 
+        const aspectRatio = width / height;
+        const scaledWidthMM = maxWidthMM;
+        const scaledHeightMM = (maxWidthMM / aspectRatio) * scaleHeight;
+        
+        const imgX = (pageWidth - scaledWidthMM) / 2;
+        
+        if (currentY + scaledHeightMM > pageHeight - margin) {
+            doc.addPage();
+            currentY = margin + 10;
+        }
+        
+        doc.addImage(imgData, imgType, imgX, currentY, scaledWidthMM, scaledHeightMM);
+        
+        return currentY + scaledHeightMM + 10;
+    };
+
+    // --- FUNCIÓN PRINCIPAL PARA GENERAR EL PDF --- //
+    const generarPDF = async () => {
+        // Obtener la versión desde el HTML
+        const version = document.querySelector('.version-indicator')?.textContent?.trim() || '';
+        const footerText = `informe emitido por software de seleccion Boetek ${version}`;
+
+        // Función para agregar el footer en cada página
+        const addFooter = (doc, pageNum, pageCount) => {
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 14;
+            const yFooter = doc.internal.pageSize.getHeight() - 8;
+            // Línea de separación superior
+            doc.setDrawColor(200, 200, 200);
+            doc.setLineWidth(0.3);
+            doc.line(margin, yFooter - 6, pageWidth - margin, yFooter - 6);
+            // Texto del footer
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(120, 120, 120);
+            doc.text(footerText, margin, yFooter, { align: 'left' });
+        };
+        const margin = 14;
+        const pageWidth = 210;
         const halfWidth = (pageWidth - margin * 2) / 2;
 
-        // Solicitar nombre y dirección del proyecto
         let projectNameInput = prompt('Por favor, ingrese el nombre del proyecto:', 'Proyecto ACS');
         if (projectNameInput === null) return;
         projectNameInput = projectNameInput.trim() || 'Proyecto Genérico Boetek';
@@ -86,30 +143,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         generarReporteBtn.disabled = true;
         generarReporteBtn.textContent = 'Generando Reporte...';
-        const originalStyles = new Map();
+        
         try {
+            const reportData = window.getReportData();
+            if (!reportData || Object.keys(reportData).length === 0) {
+                alert("No hay datos para generar el reporte. Por favor, realice un cálculo primero.");
+                return;
+            }
+
+            const { inputs, params, tableData } = reportData;
             const logoBase64 = await imageToBase64('./Images/Boetek PNG.png');
-
-            // Mostrar todos los elementos HTML necesarios para los gráficos/tablas
-            const toggleableElementIds = [
-                'comparative-table-container', 'selection-table-container', 
-                'peak-hours-container', 'instant-flow-container',
-                'line-chart-container', 'bar-chart-container', 
-                'monthly-chart-container', 'efficiency-chart-container'
-            ];
-            
-            toggleableElementIds.forEach(id => { 
-                const el = document.getElementById(id); 
-                if (el) { 
-                    originalStyles.set(id, el.style.display); 
-                    el.style.display = 'block'; 
-                } 
-            });
-
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             
-            // --- HEADER ---
             const addHeader = (data) => {
                 const docInstance = data.doc ? data.doc : data;
                 docInstance.addImage(logoBase64, 'PNG', margin, 8, 40, 10);
@@ -131,76 +177,67 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             addHeader(doc);
 
+            // Agregar footer a la primera página
+            addFooter(doc, 1, 1);
             let yPos = 30;
-            const inputData = window.getInputDataForReport();
-
 
             // --- RESUMEN DEL PROYECTO ---
             addTitle(doc, 'Resumen del Proyecto', yPos);
             addSectionSeparator(doc, yPos, margin, pageWidth);
             yPos += 6;
 
-            // --- TABLA IZQUIERDA: Nombre y Dirección del Proyecto ---
             doc.autoTable({
                 startY: yPos,
                 head: [['Datos del Cliente', '']],
-                body: [
-                    ['Nombre del proyecto', projectNameInput],
-                    ['Dirección', direccionInput]
-                ],
+                body: [['Nombre del proyecto', projectNameInput], ['Dirección', direccionInput]],
                 theme: 'plain',
                 margin: { left: margin, right: pageWidth - margin - halfWidth + 5 },
-                didDrawPage: addHeader,
                 ...tablaEstilos
             });
-
             let finalY = doc.lastAutoTable.finalY;
 
-            // --- TABLA DERECHA: Departamentos o Total de Personas ---
-            if (inputData.metodoCalculo === 'departamentos' && inputData.detalleDepartamentos.length > 0) {
-                let totalUnidades = 0;
-                let totalPersonas = 0;
-                inputData.detalleDepartamentos.forEach(row => {
-                    const unidades = parseFloat(row[2]) || 0;
-                    const personas = parseFloat(row[3]) || 0;
-                    totalUnidades += unidades;
-                    totalPersonas += personas;
-                });
-                const detalleConTotal = [...inputData.detalleDepartamentos, ['Total', '', totalUnidades, totalPersonas]];
-
+            if (inputs.metodoCalculo === 'departamentos' && inputs.detalleDepartamentos.length > 0) {
+                // Mostrar todos los departamentos, incluso con 0 unidades
+                const bodyDorms = Array.isArray(inputs.detalleDepartamentos)
+                    ? inputs.detalleDepartamentos.map(row => [row[0], row[1], row[2], row[3]])
+                    : [];
+                // Calcular totales
+                const totalUnidades = bodyDorms.reduce((sum, row) => sum + (parseFloat(row[2]) || 0), 0);
+                const totalPersonas = bodyDorms.reduce((sum, row) => sum + (parseFloat(row[3]) || 0), 0);
+                bodyDorms.push([
+                    'Totales',
+                    '',
+                    totalUnidades,
+                    totalPersonas
+                ]);
                 doc.autoTable({
                     startY: yPos,
                     head: [['Cant. Dorms', 'Pers/depto', 'Unidades', 'Total Pers.']],
-                    body: detalleConTotal,
+                    body: bodyDorms,
                     theme: 'plain',
                     margin: { left: margin + halfWidth + 5 },
-                    didDrawPage: addHeader,
                     ...tablaEstilos,
                     didParseCell: function (data) {
-                        if (data.row.index === detalleConTotal.length - 1) {
-                            data.cell.styles.lineWidth = { top: 0.5, right: 0, bottom: 0, left: 0 };
-                            data.cell.styles.lineColor = [128, 128, 128];
+                        // Si es la última fila (totales)
+                        if (data.row.index === bodyDorms.length - 1 && data.section === 'body') {
                             data.cell.styles.fontStyle = 'bold';
+                            data.cell.styles.lineWidth = { top: 0.7, bottom: 0, left: 0, right: 0 };
+                            data.cell.styles.lineColor = [40, 40, 40];
                         }
                     }
                 });
                 finalY = Math.max(finalY, doc.lastAutoTable.finalY);
-            } else if (inputData.metodoCalculo === 'total_personas') {
-                // Si el método es por total de personas, muestra solo una fila con el total
+            } else if (inputs.metodoCalculo === 'total_personas') {
                 doc.autoTable({
                     startY: yPos,
                     head: [['Total de Personas', 'Valor']],
-                    body: [
-                        ['Total de Personas', inputData.totalPersonas || '']
-                    ],
+                    body: [['Total de Personas', inputs.totalPersonas]],
                     theme: 'plain',
                     margin: { left: margin + halfWidth + 5 },
-                    didDrawPage: addHeader,
                     ...tablaEstilos
                 });
                 finalY = Math.max(finalY, doc.lastAutoTable.finalY);
             }
-
             yPos = finalY + 10;
 
             // --- DATOS DE SELECCIÓN ---
@@ -208,106 +245,72 @@ document.addEventListener('DOMContentLoaded', () => {
             addSectionSeparator(doc, yPos, margin, pageWidth);
             yPos += 8;
 
-            // --- IMAGEN DIAGRAMA SEGÚN TIPO DE SISTEMA (al inicio de la sección) ---
-            let diagramaImgPath = '';
-            let imgWidth, imgHeight;
-            if (inputData.tipoSistema === 'sala_calderas') {
-                diagramaImgPath = './Images/Diagrama_SCM.png';
-                imgWidth = 100;  // ancho en mm para Sala de Calderas
-                imgHeight = 35; // alto en mm para Sala de Calderas
-            } else {
-                diagramaImgPath = './Images/Diagrama_MBC.png';
-                imgWidth = 100;  // ancho en mm para Bomba de Calor
-                imgHeight = 35; // alto en mm para Bomba de Calor
-            }
-            let diagramaBase64 = '';
-            try {
-                diagramaBase64 = await imageToBase64(diagramaImgPath);
-            } catch (imgErr) {
-                console.warn('No se pudo cargar el diagrama:', imgErr);
-            }
+            let diagramaImgPath = inputs.tipoSistema === 'sala_calderas' ? './Images/Diagrama_SCM.png' : './Images/Diagrama_MBC.png';
+            var diagramaBase64 = await imageToBase64(diagramaImgPath);
+            var imgWidth = 100, imgHeight = 35;
+            var tablaWidth = (pageWidth - margin * 2 - 8) / 2;
 
-            // Centra la imagen en la página
-            const imgX = margin + ((pageWidth - margin * 2) - imgWidth) / 2;
-            const imgY = yPos;
+            // Tabla de parámetros de diseño a la izquierda
+            var tablaDiseno = [];
+            tablaDiseno.push(['Método de Cálculo', inputs.metodoCalculoTexto]);
+            tablaDiseno.push(['Tipo de Sistema', inputs.tipoSistemaTexto]);
+            tablaDiseno.push(['Guía de Demanda', params.demandaGuia.replace('_', ' ')]);
+            tablaDiseno.push(['Eficiencia de Generación', `${(params.eficiencia * 100).toFixed(0)}%`]);
+            tablaDiseno.push(['% Uso Acumulador', `${(params.usoAcumulador * 100).toFixed(0)}%`]);
+            tablaDiseno.push(['Temperatura Agua Fría', `${params.tempFria}°C`]);
+            tablaDiseno.push(['Temperatura de Consumo', `${params.tempConsumo}°C`]);
+            tablaDiseno.push(['Temperatura de Acumulación', `${params.tempAcumulacion}°C`]);
 
-            if (diagramaBase64) {
-                doc.addImage(diagramaBase64, 'PNG', imgX, imgY, imgWidth, imgHeight);
-            }
-
-            yPos = imgY + imgHeight + 6;
-
-            // --- TABLAS EN PARALELO BAJO LA IMAGEN ---
-            const tablaWidth = (pageWidth - margin * 2 - 8) / 2; // 8mm espacio entre tablas
-
-            // Tabla izquierda: Datos principales del sistema
             doc.autoTable({
                 startY: yPos,
-                head: [['Parámetro', 'Valor']],
-                body: [
-                    ['Método de Cálculo', inputData.metodoCalculoTexto || ''],
-                    ['Tipo de Sistema', inputData.tipoSistemaTexto || ''],
-                    ['Acumulación (Litros)', inputData.acumulacionIngresada || ''],
-                    ...(inputData.tipoSistema === 'sala_calderas' 
-                        ? [['Potencia Térmica (kW)', inputData.potenciaIngresada || '']]
-                        : [['Potencia Bombas de Calor (kW)', inputData.pBC || ''], ['Potencia R.E. (kW)', inputData.pRE || '']]
-                    )
-                ],
+                head: [['Parámetro de Diseño', 'Valor']],
+                body: tablaDiseno,
                 theme: 'plain',
-                margin: { left: margin, right: pageWidth - margin - tablaWidth - 8 },
+                margin: { left: margin },
                 tableWidth: tablaWidth,
-                didDrawPage: addHeader,
                 ...tablaEstilos
             });
-            const tablaIzqFinalY = doc.lastAutoTable.finalY;
+            var tablaDisenoFinalY = doc.lastAutoTable.finalY;
 
-            // Tabla derecha: Parámetros de Selección
+            // Imagen de diagrama a la derecha de la tabla de diseño
+            doc.addImage(diagramaBase64,'PNG', margin + tablaWidth + 8, yPos, imgWidth, imgHeight);
+            var diagramaFinalY = yPos + imgHeight;
+
+            // Tabla de parámetros de selección debajo de la de diseño
+            var tablaSeleccion = [];
+            tablaSeleccion.push(['Acumulación (Litros)', inputs.acumulacionIngresada]);
+            tablaSeleccion.push(['Prom. L/persona/día', `${params.litrosPersonaDia} L`]);
+            tablaSeleccion.push(['Hora Punta', `${params.horaPuntaInicio}:00 - ${params.horaPuntaFin}:00`]);
+            tablaSeleccion.push(['Valor m³ Gas', `$${params.valorGas.toLocaleString('es-CL')}`]);
+            tablaSeleccion.push(['Valor kWh Electricidad', `$${params.valorKwh.toLocaleString('es-CL')}`]);
+
+            var seleccionStartY = Math.max(tablaDisenoFinalY, diagramaFinalY) + 6;
             doc.autoTable({
-                startY: yPos,
+                startY: seleccionStartY,
                 head: [['Parámetro de Selección', 'Valor']],
-                body: [
-                    ['Guía de Demanda', inputData.demandaGuia.replace('_', ' ')],
-                    ['Prom. L/persona/día', `${inputData.litrosPersonaDia} L`],
-                    ['Eficiencia de Generación', `${(inputData.eficiencia * 100).toFixed(0)}%`],
-                    ['% Uso Acumulador', `${(inputData.usoAcumulador * 100).toFixed(0)}%`],
-                    ['Temperatura Agua Fría', `${inputData.tempFria}°C`],
-                    ['Temperatura de Acumulación', `${inputData.tempAcumulacion}°C`],
-                    ['Temperatura de Consumo', `${inputData.tempConsumo}°C`],
-                    ['Hora Punta', `${inputData.horaPuntaInicio}:00 - ${inputData.horaPuntaFin}:00`],
-                    ['Valor m³ Gas', `$${inputData.valorGas.toLocaleString('es-CL')}`],
-                    ['Valor kWh Electricidad', `$${inputData.valorKwh.toLocaleString('es-CL')}`]
-                ],
+                body: tablaSeleccion,
                 theme: 'plain',
-                margin: { left: margin + tablaWidth + 8 },
+                margin: { left: margin },
                 tableWidth: tablaWidth,
-                didDrawPage: addHeader,
                 ...tablaEstilos
             });
-            const tablaDerFinalY = doc.lastAutoTable.finalY;
-
-            // Calcula la posición vertical más baja de ambas tablas
-            const tablasFinalY = Math.max(tablaIzqFinalY, tablaDerFinalY);
-            yPos = tablasFinalY + 8;
-
-            // --- IMÁGENES ASHRAE AL FINAL DE DATOS DE SELECCIÓN ---
-            const logoAshraePath = './Images/logo_ashrae.png';
-            const perfilesAshraePath = './Images/perfiles_ashrae.png';
-            const ashraeLogoScale = 0.13;
-            const ashraePerfilesScale = 0.13;
-
-            let logoAshraeBase64 = '';
-            let perfilesAshraeBase64 = '';
-            try {
-                logoAshraeBase64 = await imageToBase64(logoAshraePath);
-                perfilesAshraeBase64 = await imageToBase64(perfilesAshraePath);
-            } catch (imgErr) {
-                console.warn('No se pudo cargar una imagen ASHRAE:', imgErr);
-            }
-
-            let imgLogo = null;
-            let imgPerfiles = null;
+            yPos = doc.lastAutoTable.finalY + 10;
+            // ...existing code...
 
             // --- LOGO ASHRAE IZQUIERDA ---
+                let logoAshraeBase64 = '';
+                let perfilesAshraeBase64 = '';
+                const logoAshraePath = './Images/Logo_Ashrae.png';
+                const perfilesAshraePath = './Images/Perfiles_Ashrae.png';
+                const ashraeLogoScale = 0.13;
+                const ashraePerfilesScale = 0.13;
+
+                try {
+                    logoAshraeBase64 = await imageToBase64(logoAshraePath);
+                    perfilesAshraeBase64 = await imageToBase64(perfilesAshraePath);
+                } catch (imgErr) {
+                    console.warn('No se pudo cargar una imagen ASHRAE:', imgErr);
+                }
             if (logoAshraeBase64) {
                 imgLogo = new Image();
                 imgLogo.src = logoAshraeBase64;
@@ -317,7 +320,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const logoHeight = imgLogo.height * ashraeLogoScale;
                 const logoX = 35; // valor fijo, ajusta aquí
 
-                doc.addImage(logoAshraeBase64, 'PNG', logoX, yPos, logoWidth, logoHeight);
+                doc.addImage(logoAshraeBase64, 'JPEG', logoX, yPos, logoWidth, logoHeight, undefined, 0.5);
             }
 
             // --- PERFILES ASHRAE DERECHA ---
@@ -330,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const perfilesHeight = imgPerfiles.height * ashraePerfilesScale;
                 const perfilesX = 80; // valor fijo, ajusta aquí
 
-                doc.addImage(perfilesAshraeBase64, 'PNG', perfilesX, yPos, perfilesWidth, perfilesHeight);
+                doc.addImage(perfilesAshraeBase64, 'JPEG', perfilesX, yPos, perfilesWidth, perfilesHeight, undefined, 0.5);
             }
 
             // Actualiza yPos para continuar debajo de las imágenes
@@ -340,48 +343,84 @@ document.addEventListener('DOMContentLoaded', () => {
             ) + 8;
 
             // --- RESULTADOS Y ANÁLISIS ---
+            // Solo agregar nueva página si hay contenido pendiente
             doc.addPage();
             addHeader(doc);
+            addFooter(doc, doc.internal.getCurrentPageInfo().pageNumber, doc.getNumberOfPages());
             yPos = 30;
             addTitle(doc, 'Resultados de Selección y Análisis', yPos);
             addSectionSeparator(doc, yPos, margin, pageWidth);
             yPos += 10;
-            yPos = await addElementToPdf(doc, 'resultado-table', yPos);
-            yPos = await addElementToPdf(doc, 'comparative-table-container', yPos);
-            yPos = await addElementToPdf(doc, 'selection-table-container', yPos);
-            if (inputData.tipoSistema !== 'sala_calderas') {
-                yPos = await addElementToPdf(doc, 'peak-hours-container', yPos);
+
+            const resultadoHead = [['Parámetro', 'Requerido', 'Seleccionado', 'Cumple', 'Monitoreo', 'Sobredim.', 'Sel. Falla', 'Cumple Falla']];
+            if (inputs.tipoSistema !== 'falla_re') {
+                resultadoHead[0] = resultadoHead[0].slice(0, -2);
             }
-            yPos = await addElementToPdf(doc, 'instant-flow-container', yPos);
+            doc.autoTable({
+                startY: yPos,
+                head: resultadoHead,
+                body: inputs.tipoSistema !== 'falla_re' ? tableData.resultado.map(row => row.slice(0, -2)) : tableData.resultado,
+                ...tablaEstilos
+            });
+            yPos = doc.lastAutoTable.finalY + 10;
+            
+            doc.autoTable({ startY: yPos, head: [['Parámetro', 'SCM (a Gas)', 'Bomba de Calor', 'Sistema Tradicional']], body: tableData.comparative, ...tablaEstilos });
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            doc.autoTable({ startY: yPos, head: [['Parámetro', tableData.selection.header]], body: tableData.selection.body, ...tablaEstilos });
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            if (inputs.tipoSistema !== 'sala_calderas') {
+                doc.autoTable({ startY: yPos, head: [['Escenario de Suministro', 'Consumo Hora Punta', 'Cumple', 'Generación Hora Punta']], body: tableData.peakHours, ...tablaEstilos });
+                yPos = doc.lastAutoTable.finalY + 10;
+            }
+
+            addTitle(doc, 'Caudales Instantáneos', yPos);
+            yPos += 8;
+            const caudalesBody = [
+                ['Caudal a 50°C', tableData.instantFlow['50c']],
+                ['Caudal a 60°C', tableData.instantFlow['60c']],
+                [`Caudal a Temp. Consumo (${tableData.instantFlow.tempConsumo})`, tableData.instantFlow.consumo]
+            ];
+            doc.autoTable({
+                startY: yPos,
+                head: [['Parámetro', 'Valor']],
+                body: caudalesBody,
+                theme: 'plain',
+                margin: { left: margin },
+                ...tablaEstilos
+            });
+            yPos = doc.lastAutoTable.finalY + 10;
 
             // --- GRÁFICOS ---
             doc.addPage();
             addHeader(doc);
+            addFooter(doc, doc.internal.getCurrentPageInfo().pageNumber, doc.getNumberOfPages());
             yPos = 30;
             addTitle(doc, 'Gráficos de Consumo y Eficiencia', yPos);
             addSectionSeparator(doc, yPos, margin, pageWidth);
             yPos += 10;
-            yPos = addChartToPdf(doc, 'line', yPos);
-            yPos = addChartToPdf(doc, 'bar', yPos);
-            yPos = addChartToPdf(doc, 'monthly', yPos);
-            yPos = addChartToPdf(doc, 'efficiency', yPos);
-
             
+            // AHORA LAS LLAMADAS USAN 'await' PARA ESPERAR LA IMAGEN
+            yPos = await addChartToPdf(doc, 'line', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);     
+            yPos = await addChartToPdf(doc, 'bar', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);    
+            yPos = await addChartToPdf(doc, 'monthly', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);  
+            yPos = await addChartToPdf(doc, 'efficiency', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);
 
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const formattedDate = `${year}.${month}.${day}`;
-            const fileName = `${formattedDate} - ${projectNameInput}.pdf`;
+        // Al final, asegurarse que la última página tiene footer
+        const pageCount = doc.getNumberOfPages();
+        doc.setPage(pageCount);
+        addFooter(doc, pageCount, pageCount);
 
+        const now = new Date();
+        const formattedDate = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`;
+        const fileName = `${formattedDate} - ${projectNameInput}.pdf`;
             doc.save(fileName);
 
         } catch (error) {
             console.error('Error detallado al generar el PDF:', error);
             alert('Hubo un error al generar el reporte. Revisa la consola para más detalles.');
         } finally {
-            originalStyles.forEach((style, id) => { const el = document.getElementById(id); if (el) el.style.display = style; });
             generarReporteBtn.disabled = false;
             generarReporteBtn.textContent = 'Generar Reporte PDF';
         }

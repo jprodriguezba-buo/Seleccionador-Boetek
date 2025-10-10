@@ -29,4 +29,8 @@
 - se incorpora reporte pdf en su primera version
 1.61
 - se mejora sustancialmente reporte pdf, incorporando imagenes, revisando formato tablas, etc.
-
+1.62
+- se ajusta codigo para generar pdf mas liviano
+- se corrijen logos ashrae
+- se cambian tablas de resultado como imagen a texto en el pdf reduciendo el peso del archivo.
+- se agrega footer indicando version
