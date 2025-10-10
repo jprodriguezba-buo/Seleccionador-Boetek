@@ -267,80 +267,189 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: tablaDiseno,
                 theme: 'plain',
                 margin: { left: margin },
-                tableWidth: tablaWidth,
-                ...tablaEstilos
+                //tableWidth: tablaWidth,
+                ...tablaEstilos,
+                columnStyles: {0: { cellWidth: 35 }, 1: { cellWidth: 35 }}
             });
             var tablaDisenoFinalY = doc.lastAutoTable.finalY;
 
+            // Texto explicativo debajo de la tabla de parámetros de diseño
+            let yTextoDiseno = tablaDisenoFinalY + 2;
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(120, 120, 120);
+            doc.text('*Para realización de pruebas se debe considerar que la mezcla es realizada en el punto de consumo.', margin, yTextoDiseno);
+
+            // Título del diagrama encima de la imagen
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            doc.text('Esquema simplificado de funcionamiento', margin + 100, yPos);
+
             // Imagen de diagrama a la derecha de la tabla de diseño
-            doc.addImage(diagramaBase64,'PNG', margin + tablaWidth + 8, yPos, imgWidth, imgHeight);
-            var diagramaFinalY = yPos + imgHeight;
+            doc.addImage(diagramaBase64,'PNG', margin + 75, yPos+3, imgWidth, imgHeight);
+            var diagramaFinalY = yPos + imgHeight+3;
 
-            // Tabla de parámetros de selección debajo de la de diseño
+            yPos = Math.max(tablaDisenoFinalY, diagramaFinalY) + 10;
+            
+
+            // --- SELECCIÓN ASHRAE ---
+            addTitle(doc, 'Seleccion ASHRAE', yPos);
+            addSectionSeparator(doc, yPos, margin, pageWidth);
+            yPos += 8;
+            
+            var seleccionStartY = yPos;
+
             var tablaSeleccion = [];
+            tablaSeleccion.push(['Potencia (KW)', inputs.potenciaParaCalculo]); 
             tablaSeleccion.push(['Acumulación (Litros)', inputs.acumulacionIngresada]);
-            tablaSeleccion.push(['Prom. L/persona/día', `${params.litrosPersonaDia} L`]);
-            tablaSeleccion.push(['Hora Punta', `${params.horaPuntaInicio}:00 - ${params.horaPuntaFin}:00`]);
-            tablaSeleccion.push(['Valor m³ Gas', `$${params.valorGas.toLocaleString('es-CL')}`]);
-            tablaSeleccion.push(['Valor kWh Electricidad', `$${params.valorKwh.toLocaleString('es-CL')}`]);
+            // tablaSeleccion.push(['Prom. L/persona/día', `${params.litrosPersonaDia} L`]);
+            // tablaSeleccion.push(['Hora Punta', `${params.horaPuntaInicio}:00 - ${params.horaPuntaFin}:00`]);
+            // tablaSeleccion.push(['Valor m³ Gas', `$${params.valorGas.toLocaleString('es-CL')}`]);
+            // tablaSeleccion.push(['Valor kWh Electricidad', `$${params.valorKwh.toLocaleString('es-CL')}`]);
+            tablaSeleccion.push(['Caudal a 50°C', tableData.instantFlow['50c']]);
+            tablaSeleccion.push(['Caudal a 60°C', tableData.instantFlow['60c']]);
+            tablaSeleccion.push([`Caudal a Temp. Consumo (${tableData.instantFlow.tempConsumo})`, tableData.instantFlow.consumo]);
 
-            var seleccionStartY = Math.max(tablaDisenoFinalY, diagramaFinalY) + 6;
             doc.autoTable({
                 startY: seleccionStartY,
                 head: [['Parámetro de Selección', 'Valor']],
                 body: tablaSeleccion,
                 theme: 'plain',
                 margin: { left: margin },
-                tableWidth: tablaWidth,
-                ...tablaEstilos
+                ...tablaEstilos,
+                columnStyles: {0: { cellWidth: 35 }, 1: { cellWidth: 30 }}
             });
-            yPos = doc.lastAutoTable.finalY + 10;
-            // ...existing code...
+            // LOGO ASHRAE Y PERFILES SOBRE la tabla de resultados
+            let logoAshraeBase64 = '';
+            let perfilesAshraeBase64 = '';
+            let logoAshraePath = './Images/Logo_Ashrae.png';
+            let perfilesAshraePath = './Images/Perfiles_Ashrae.png';
+            let ashraeLogoScale = 0.09;
+            let ashraePerfilesScale = 0.12;
 
-            // --- LOGO ASHRAE IZQUIERDA ---
-                let logoAshraeBase64 = '';
-                let perfilesAshraeBase64 = '';
-                const logoAshraePath = './Images/Logo_Ashrae.png';
-                const perfilesAshraePath = './Images/Perfiles_Ashrae.png';
-                const ashraeLogoScale = 0.13;
-                const ashraePerfilesScale = 0.13;
+            try {
+                logoAshraeBase64 = await imageToBase64(logoAshraePath);
+                perfilesAshraeBase64 = await imageToBase64(perfilesAshraePath);
+            } catch (imgErr) {
+                console.warn('No se pudo cargar una imagen ASHRAE:', imgErr);
+            }
 
-                try {
-                    logoAshraeBase64 = await imageToBase64(logoAshraePath);
-                    perfilesAshraeBase64 = await imageToBase64(perfilesAshraePath);
-                } catch (imgErr) {
-                    console.warn('No se pudo cargar una imagen ASHRAE:', imgErr);
-                }
+            let imgLogo, imgPerfiles;
+            let logoHeight = 0, perfilesHeight = 0;
+            let imgY = yPos;
+            let logoWidth = 0, perfilesWidth = 0;
+            let logoX = 0;
             if (logoAshraeBase64) {
                 imgLogo = new Image();
                 imgLogo.src = logoAshraeBase64;
                 await new Promise(resolve => { imgLogo.onload = resolve; });
 
-                const logoWidth = imgLogo.width * ashraeLogoScale;
-                const logoHeight = imgLogo.height * ashraeLogoScale;
-                const logoX = 35; // valor fijo, ajusta aquí
+                logoWidth = imgLogo.width * ashraeLogoScale;
+                logoHeight = imgLogo.height * ashraeLogoScale;
+                logoX = margin + 60; // alineado a la izquierda
 
-                doc.addImage(logoAshraeBase64, 'JPEG', logoX, yPos, logoWidth, logoHeight, undefined, 0.5);
+                doc.addImage(logoAshraeBase64, 'JPEG', logoX, imgY, logoWidth, logoHeight, undefined, 0.7);
             }
 
-            // --- PERFILES ASHRAE DERECHA ---
             if (perfilesAshraeBase64) {
                 imgPerfiles = new Image();
                 imgPerfiles.src = perfilesAshraeBase64;
                 await new Promise(resolve => { imgPerfiles.onload = resolve; });
 
-                const perfilesWidth = imgPerfiles.width * ashraePerfilesScale;
-                const perfilesHeight = imgPerfiles.height * ashraePerfilesScale;
-                const perfilesX = 80; // valor fijo, ajusta aquí
+                perfilesWidth = imgPerfiles.width * ashraePerfilesScale;
+                perfilesHeight = imgPerfiles.height * ashraePerfilesScale;
+                let perfilesX = logoX + logoWidth ; // a la derecha del logo
 
-                doc.addImage(perfilesAshraeBase64, 'JPEG', perfilesX, yPos, perfilesWidth, perfilesHeight, undefined, 0.5);
+                doc.addImage(perfilesAshraeBase64, 'JPEG', perfilesX, imgY, perfilesWidth, perfilesHeight, undefined, 0.7);
             }
 
-            // Actualiza yPos para continuar debajo de las imágenes
-            yPos = yPos + Math.max(
-                imgLogo ? (imgLogo.height * ashraeLogoScale) : 0,
-                imgPerfiles ? (imgPerfiles.height * ashraePerfilesScale) : 0
-            ) + 8;
+            // Calcula la posición final para la tabla de resultados debajo de las imágenes
+            // Actualiza la posición debajo de las imágenes y de la tabla de selección
+            yPos = Math.max(
+                imgY + Math.max(logoHeight, perfilesHeight) + 4,
+                doc.lastAutoTable.finalY + 4
+            );
+
+            // --- Tabla de resultados ASHRAE ---
+            var resultadoHeadAshrae = [['Parámetro', 'Requerido', 'Seleccionado', 'Cumple', 'Monitoreo', 'Sobredim.', 'Sel. Falla', 'Cumple Falla']];
+            if (inputs.tipoSistema !== 'falla_re') {
+                resultadoHeadAshrae[0] = resultadoHeadAshrae[0].slice(0, -2);
+            }
+            var resultadoBodyAshrae = inputs.tipoSistema !== 'falla_re' ? tableData.resultado.map(row => row.slice(0, -2)) : tableData.resultado;
+            var resultadoColumnStylesAshrae = {
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 'auto' },
+                3: { cellWidth: 'auto' },
+                4: { cellWidth: 'auto' },
+                5: { cellWidth: 'auto' },
+                6: { cellWidth: 'auto' },
+                7: { cellWidth: 'auto' }
+            };
+            doc.autoTable({
+                startY: yPos,
+                head: resultadoHeadAshrae,
+                body: resultadoBodyAshrae,
+                theme: 'plain',
+                margin: { left: margin },
+                
+                ...tablaEstilos,
+                columnStyles: resultadoColumnStylesAshrae
+            });
+            yPos = doc.lastAutoTable.finalY + 10;
+
+
+            // --- Analisis Consumo ---
+
+            doc.addPage();
+            addHeader(doc);
+            addFooter(doc, doc.internal.getCurrentPageInfo().pageNumber, doc.getNumberOfPages());
+            yPos = 30;
+            addTitle(doc, 'Análisis de Consumo', yPos);
+            addSectionSeparator(doc, yPos, margin, pageWidth);
+            yPos += 10;
+
+
+            // Gráfico de consumo por hora
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            const tituloHoraAnalisis = 'Gráfico de Consumo por Hora';
+            const tituloHoraAnalisisWidth = doc.getTextWidth(tituloHoraAnalisis);
+            doc.text(tituloHoraAnalisis, (pageWidth - tituloHoraAnalisisWidth) / 2, yPos);
+            yPos += 8;
+            yPos = await addChartToPdf(doc, 'bar', yPos, 'jpeg', 0.4, 1200, 600, 0.9, 0.9);
+
+            // Gráfico de consumo mensual
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            const tituloMensual = 'Gráfico de Consumo Mensual';
+            const tituloMensualWidth = doc.getTextWidth(tituloMensual);
+            doc.text(tituloMensual, (pageWidth - tituloMensualWidth) / 2, yPos);
+            yPos += 8;
+            yPos = await addChartToPdf(doc, 'monthly', yPos, 'jpeg', 0.4, 1200, 600, 0.9, 0.9);
+
+            // Tabla de resultados de consumo abajo del gráfico mensual
+            // Modificar la tabla para agregar * y ** en los textos indicados
+
+            doc.autoTable({ startY: yPos, head: [['Parámetro', tableData.selection.header]], body: tableData.selection.body, ...tablaEstilos });
+            yPos = doc.lastAutoTable.finalY + 4;
+
+            // Texto con valores de gas y electricidad utilizados
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(120, 120, 120);
+            const textoValores = `* Valores utilizados: Gas = $${params.valorGas.toLocaleString('es-CL')} /m³, Electricidad = $${params.valorKwh.toLocaleString('es-CL')} /kWh`;
+            doc.text(textoValores, margin, yPos);
+            yPos += 5;
+
+            // Texto con litros por persona promedio en invierno
+            const textoLitros = `** Litros por persona promedio en invierno: ${params.litrosPersonaDia} L`;
+            doc.text(textoLitros, margin, yPos);
+            yPos += 5;
+
 
             // --- RESULTADOS Y ANÁLISIS ---
             // Solo agregar nueva página si hay contenido pendiente
@@ -348,64 +457,54 @@ document.addEventListener('DOMContentLoaded', () => {
             addHeader(doc);
             addFooter(doc, doc.internal.getCurrentPageInfo().pageNumber, doc.getNumberOfPages());
             yPos = 30;
-            addTitle(doc, 'Resultados de Selección y Análisis', yPos);
+            addTitle(doc, 'Análisis Comparativo de Soluciones', yPos);
             addSectionSeparator(doc, yPos, margin, pageWidth);
             yPos += 10;
 
-            const resultadoHead = [['Parámetro', 'Requerido', 'Seleccionado', 'Cumple', 'Monitoreo', 'Sobredim.', 'Sel. Falla', 'Cumple Falla']];
-            if (inputs.tipoSistema !== 'falla_re') {
-                resultadoHead[0] = resultadoHead[0].slice(0, -2);
-            }
-            doc.autoTable({
-                startY: yPos,
-                head: resultadoHead,
-                body: inputs.tipoSistema !== 'falla_re' ? tableData.resultado.map(row => row.slice(0, -2)) : tableData.resultado,
-                ...tablaEstilos
-            });
-            yPos = doc.lastAutoTable.finalY + 10;
-            
             doc.autoTable({ startY: yPos, head: [['Parámetro', 'SCM (a Gas)', 'Bomba de Calor', 'Sistema Tradicional']], body: tableData.comparative, ...tablaEstilos });
-            yPos = doc.lastAutoTable.finalY + 10;
+            yPos = doc.lastAutoTable.finalY + 4;
 
-            doc.autoTable({ startY: yPos, head: [['Parámetro', tableData.selection.header]], body: tableData.selection.body, ...tablaEstilos });
-            yPos = doc.lastAutoTable.finalY + 10;
+            // Texto con valores de gas y electricidad utilizados
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'italic');
+            doc.setTextColor(120, 120, 120);
+            const textoValoresComp = `* Valores utilizados: Gas = $${params.valorGas.toLocaleString('es-CL')} /m³, Electricidad = $${params.valorKwh.toLocaleString('es-CL')} /kWh`;
+            doc.text(textoValoresComp, margin, yPos);
+            yPos += 5;
 
-            if (inputs.tipoSistema !== 'sala_calderas') {
-                doc.autoTable({ startY: yPos, head: [['Escenario de Suministro', 'Consumo Hora Punta', 'Cumple', 'Generación Hora Punta']], body: tableData.peakHours, ...tablaEstilos });
-                yPos = doc.lastAutoTable.finalY + 10;
-            }
-
-            addTitle(doc, 'Caudales Instantáneos', yPos);
-            yPos += 8;
-            const caudalesBody = [
-                ['Caudal a 50°C', tableData.instantFlow['50c']],
-                ['Caudal a 60°C', tableData.instantFlow['60c']],
-                [`Caudal a Temp. Consumo (${tableData.instantFlow.tempConsumo})`, tableData.instantFlow.consumo]
-            ];
-            doc.autoTable({
-                startY: yPos,
-                head: [['Parámetro', 'Valor']],
-                body: caudalesBody,
-                theme: 'plain',
-                margin: { left: margin },
-                ...tablaEstilos
-            });
-            yPos = doc.lastAutoTable.finalY + 10;
+            // Texto con litros por persona promedio en invierno
+            const textoLitrosComp = `** Litros por persona promedio en invierno: ${params.litrosPersonaDia} L`;
+            doc.text(textoLitrosComp, margin, yPos);
+            yPos += 5;
 
             // --- GRÁFICOS ---
             doc.addPage();
             addHeader(doc);
             addFooter(doc, doc.internal.getCurrentPageInfo().pageNumber, doc.getNumberOfPages());
             yPos = 30;
-            addTitle(doc, 'Gráficos de Consumo y Eficiencia', yPos);
+            addTitle(doc, 'Otros Gráficos', yPos);
             addSectionSeparator(doc, yPos, margin, pageWidth);
             yPos += 10;
-            
-            // AHORA LAS LLAMADAS USAN 'await' PARA ESPERAR LA IMAGEN
-            yPos = await addChartToPdf(doc, 'line', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);     
-            yPos = await addChartToPdf(doc, 'bar', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);    
-            yPos = await addChartToPdf(doc, 'monthly', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);  
-            yPos = await addChartToPdf(doc, 'efficiency', yPos, 'jpeg', 0.4, 1200, 600, 0.7, 0.7);
+
+            // Gráfico de Perfil Diario
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            const tituloDiarioGraficos = 'Gráfico de Perfil de Consumo Diario';
+            const tituloDiarioGraficosWidth = doc.getTextWidth(tituloDiarioGraficos);
+            doc.text(tituloDiarioGraficos, (pageWidth - tituloDiarioGraficosWidth) / 2, yPos);
+            yPos += 8;
+            yPos = await addChartToPdf(doc, 'line', yPos, 'jpeg', 0.4, 1200, 600, 0.9, 0.9);
+
+            // Gráfico de Eficiencia Energética
+            doc.setFontSize(9);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(80, 80, 80);
+            const tituloEficiencia = 'Gráfico de Eficiencia Energética';
+            const tituloEficienciaWidth = doc.getTextWidth(tituloEficiencia);
+            doc.text(tituloEficiencia, (pageWidth - tituloEficienciaWidth) / 2, yPos);
+            yPos += 8;
+            yPos = await addChartToPdf(doc, 'efficiency', yPos, 'jpeg', 0.4, 1200, 600, 0.9, 0.9);
 
         // Al final, asegurarse que la última página tiene footer
         const pageCount = doc.getNumberOfPages();

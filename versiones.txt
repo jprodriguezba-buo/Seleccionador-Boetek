@@ -34,3 +34,5 @@
 - se corrijen logos ashrae
 - se cambian tablas de resultado como imagen a texto en el pdf reduciendo el peso del archivo.
 - se agrega footer indicando version
+1.63
+- se mejora sustancialmente el reporte pdf.
