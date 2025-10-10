@@ -36,3 +36,5 @@
 - se agrega footer indicando version
 1.63
 - se mejora sustancialmente el reporte pdf.
+1.64
+- se corrije footer

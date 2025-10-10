@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const generarPDF = async () => {
         // Obtener la versión desde el HTML
         const version = document.querySelector('.version-indicator')?.textContent?.trim() || '';
-        const footerText = `informe emitido por software de seleccion Boetek ${version}`;
+        const footerText = `Informe emitido por software de seleccion Boetek ${version}`;
 
         // Función para agregar el footer en cada página
         const addFooter = (doc, pageNum, pageCount) => {
