@@ -46,3 +46,5 @@
 - se modulariza mas la app, se crean calculations.js y dom.js
 1.67
 - se crea ui.js y se mejora la modularizacion de la app
+1.68
+- se mejora modularizacion, se crea charts.js

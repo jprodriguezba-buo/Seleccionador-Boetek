@@ -1,16 +1,15 @@
 // app.js
 
 import DOM from './js/dom.js';
-import { calculateResults, getResultadoTableData, getComparativeTableData, getSelectionTableData, getPeakHoursTableData, getInstantFlowData, aggregateHourlyData } from './js/calculations.js';
+import { calculateResults, getResultadoTableData, getComparativeTableData, getSelectionTableData, getPeakHoursTableData, getInstantFlowData } from './js/calculations.js';
 import { updateUITables, updateTotals, updateSystemView, updateViewModeDisplay, toggleEditMode, switchTab } from './js/ui.js';
+import { updateCharts, getChartConfig } from './js/charts.js'; // <-- NUEVA IMPORTACIÓN
 
 document.addEventListener('DOMContentLoaded', async () => {
     // --- REGISTRO DE PLUGINS Y VARIABLES GLOBALES DE ESTADO ---
     Chart.register(ChartDataLabels);
     Chart.defaults.plugins.datalabels.display = false;
 
-    let lineChartInstance, barChartInstance, monthlyChartInstance, efficiencyChartInstance;
-    let chartConfigs = {};
     let monitoringData = [];
     let globalResults = {};
     let config = {};
@@ -68,7 +67,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         const calculatedResults = calculateResults(userInputs, params, config, monitoringData);
         
         updateUITables(userInputs, calculatedResults, params, config);
-        updateCharts(userInputs, calculatedResults);
+        // La llamada a updateCharts ahora necesita todos los datos
+        updateCharts(userInputs, calculatedResults, params, config, monitoringData);
 
         globalResults = {
             inputs: userInputs,
@@ -82,51 +82,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 instantFlow: getInstantFlowData(calculatedResults, params)
             }
         };
-    };
-
-    // --- GRÁFICOS ---
-
-    const updateCharts = (inputs, results) => {
-        if (monitoringData.length > 0) {
-            const factor = inputs.totalPersonas > 0 ? inputs.totalPersonas / config.constants.PERSONAS_BASE_MONITOREO : 0;
-            const lineLabels = monitoringData.map(d => new Date(d.created_at).toTimeString().substring(0, 5));
-            const lineScaledData = monitoringData.map(d => d["caudal L/min"] * factor);
-            chartConfigs.line = { type: 'line', data: { labels: lineLabels, datasets: [{ label: 'Caudal Simulado (L/min)', data: lineScaledData, borderColor: 'rgba(0, 86, 179, 1)', backgroundColor: 'rgba(0, 86, 179, 0.2)', borderWidth: 1.5, pointRadius: 0, fill: true }] }, options: { responsive: true, maintainAspectRatio: true, scales: { x: { ticks: { maxTicksLimit: 24 } }, y: { beginAtZero: true, title: { display: true, text: 'Litros por minuto (L/min)' } } }, plugins: { legend: { display: false }} } };
-            if (lineChartInstance) lineChartInstance.destroy();
-            lineChartInstance = new Chart(DOM.lineChartCanvas, chartConfigs.line);
-        }
-
-        if (monitoringData.length > 0) {
-            const hourlyAggregatedData = aggregateHourlyData(monitoringData);
-            const factor = inputs.totalPersonas > 0 ? inputs.totalPersonas / config.constants.PERSONAS_BASE_MONITOREO : 0;
-            const barScaledData = hourlyAggregatedData.map(d => d * factor);
-            const barColors = Array.from({ length: 24 }, (_, i) => (inputs.tipoSistema !== 'sala_calderas' && i >= params.horaPuntaInicio && i < params.horaPuntaFin) ? 'rgba(255, 99, 132, 0.5)' : 'rgba(0, 86, 179, 0.5)');
-            const borderColors = Array.from({ length: 24 }, (_, i) => (inputs.tipoSistema !== 'sala_calderas' && i >= params.horaPuntaInicio && i < params.horaPuntaFin) ? 'rgba(255, 99, 132, 1)' : 'rgba(0, 86, 179, 1)');
-            const barLabels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`);
-            chartConfigs.bar = { type: 'bar', data: { labels: barLabels, datasets: [{ label: 'Consumo Total (Litros)', data: barScaledData, backgroundColor: barColors, borderColor: borderColors, borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Litros (Lts)' } } }, plugins: { legend: { display: false }, datalabels: { display: true, color: '#333', anchor: 'end', align: 'top', font: { weight: 'bold', size: 10 }, formatter: (v) => (v > 1) ? Math.round(v) : '' } } } };
-            if (barChartInstance) barChartInstance.destroy();
-            barChartInstance = new Chart(DOM.barChartCanvas, chartConfigs.bar);
-        }
-
-        const monthlyLabels = Object.keys(config.consumoMensualDistribucion).map(m => m.charAt(0).toUpperCase() + m.slice(1));
-        const monthlyDataM3 = Object.values(config.consumoMensualDistribucion).map(dist => results.consumoAnualTotalM3 * dist);
-        chartConfigs.monthly = { type: 'bar', data: { labels: monthlyLabels, datasets: [{ label: 'Consumo Mensual (m³)', data: monthlyDataM3, backgroundColor: 'rgba(0, 86, 179, 0.5)', borderColor: 'rgba(0, 86, 179, 1)', borderWidth: 1 }] }, options: { responsive: true, maintainAspectRatio: true, scales: { y: { beginAtZero: true, title: { display: true, text: 'Metros Cúbicos (m³)' } } }, plugins: { legend: { display: false }, datalabels: { display: true, anchor: 'end', align: 'top', color: '#333', font: { weight: 'bold' }, formatter: (v) => v > 0 ? Math.round(v).toLocaleString('es-CL') : '' } } } };
-        if (monthlyChartInstance) monthlyChartInstance.destroy();
-        monthlyChartInstance = new Chart(DOM.monthlyChartCanvas, chartConfigs.monthly);
-        
-        const ratioEsperado = (inputs.tipoSistema === 'sala_calderas') ? results.scmRatio : results.bcRatio;
-        const tipoSistema = inputs.tipoSistema;
-        let datasets = [], yAxisTitle = '';
-        if (tipoSistema === 'sala_calderas') {
-            yAxisTitle = 'm³ Gas / m³ H₂O';
-            datasets = [ { label: 'SCM Boetek', data: config.efficiencyData.scm, borderColor: 'rgba(0, 86, 179, 1)', tension: 0.1, type: 'line', pointRadius: 0 }, { label: 'Sistema Tradicional', data: config.efficiencyData.traditional, borderColor: 'rgba(108, 117, 125, 1)', tension: 0.1, type: 'line', pointRadius: 0 }, { label: 'Punto de Operación', data: [{ x: results.dailyM3, y: ratioEsperado }], backgroundColor: 'red', type: 'scatter', pointRadius: 6, pointHoverRadius: 8 } ];
-        } else {
-            yAxisTitle = 'kWh / m³ H₂O';
-            datasets = [ { label: 'Eficiencia BC', data: config.efficiencyData.bc, borderColor: 'rgba(0, 86, 179, 1)', tension: 0.1, type: 'line', pointRadius: 0 }, { label: 'Punto de Operación', data: [{ x: results.dailyM3, y: ratioEsperado }], backgroundColor: 'red', type: 'scatter', pointRadius: 6, pointHoverRadius: 8 } ];
-        }
-        chartConfigs.efficiency = { data: { datasets: datasets }, options: { responsive: true, maintainAspectRatio: true, plugins: { tooltip: { callbacks: { label: (c) => `${c.dataset.label || ''}: (${c.parsed.x.toFixed(2)} m³/día, ${c.parsed.y.toFixed(2)})` } } }, scales: { x: { type: 'linear', position: 'bottom', title: { display: true, text: 'Consumo Promedio (m³/día)' } }, y: { beginAtZero: true, title: { display: true, text: yAxisTitle } } } } };
-        if (efficiencyChartInstance) efficiencyChartInstance.destroy();
-        efficiencyChartInstance = new Chart(DOM.efficiencyChartCanvas, chartConfigs.efficiency);
     };
 
     // --- INICIALIZACIÓN Y EVENT LISTENERS ---
@@ -145,7 +100,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
-        // --- Event Listeners ---
         DOM.calculadoraForm.addEventListener('input', (event) => {
             if (event.target.matches('input, select')) { updateComparison(); }
         });
@@ -180,7 +134,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         const analysisContainers = [DOM.equipoSeleccionadoContainer, DOM.selectionTableContainer, DOM.peakHoursContainer];
         analysisTabs.forEach(tab => tab.addEventListener('click', () => switchTab(tab, analysisTabs, analysisContainers)));
 
-        // --- Carga Inicial ---
         updateViewModeDisplay(params);
         updateSystemView();
         updateComparison();
@@ -188,9 +141,51 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     initializeApp();
 
-    // --- FUNCIONES GLOBALES PARA REPORTE (se mantienen aquí) ---
+    // --- FUNCIONES GLOBALES PARA REPORTE ---
     window.getChartImage = (chartName, format = 'jpeg', quality = 0.7, width = 1200, height = 600) => {
-        // ... (código sin cambios)
+        return new Promise((resolve) => {
+            const config = getChartConfig(chartName); // Usa la nueva función importada
+            if (!config) {
+                resolve(null);
+                return;
+            }
+
+            const exportConfig = JSON.parse(JSON.stringify(config));
+            exportConfig.options.responsive = false;
+            exportConfig.options.animation = false;
+            exportConfig.options.devicePixelRatio = 2;
+
+            if (chartName === 'bar' || chartName === 'monthly') {
+                if (exportConfig.data.datasets[0]) {
+                    exportConfig.data.datasets[0].data = exportConfig.data.datasets[0].data.map(v => Math.round(v));
+                }
+            }
+
+            exportConfig.plugins = exportConfig.plugins || [];
+            exportConfig.plugins.push({
+                id: 'custom_canvas_background',
+                beforeDraw: (chart) => {
+                    const ctx = chart.canvas.getContext('2d');
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'destination-over';
+                    ctx.fillStyle = 'white';
+                    ctx.fillRect(0, 0, chart.width, chart.height);
+                    ctx.restore();
+                }
+            });
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+            const tempCtx = tempCanvas.getContext('2d');
+            
+            const chartInstance = new Chart(tempCtx, exportConfig);
+            setTimeout(() => {
+                resolve(tempCanvas.toDataURL(`image/${format}`, quality));
+                chartInstance.destroy();
+            }, 250);
+        });
     };
+    
     window.getReportData = () => globalResults;
 });
