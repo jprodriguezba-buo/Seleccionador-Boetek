@@ -42,3 +42,6 @@
 - Se mejora codigo dejando datos de configuracion en config.json
 - se incorpora disclaimer respecto a temperaturas
 - se agrega capacidades con diferentes temperaturas de acumulacion, consumo y agua fria
+1.66
+- se modulariza mas la app, se crean calculations.js y dom.js
+-
