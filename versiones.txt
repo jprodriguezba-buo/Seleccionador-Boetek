@@ -38,3 +38,7 @@
 - se mejora sustancialmente el reporte pdf.
 1.64
 - se corrije footer
+1.65
+- Se mejora codigo dejando datos de configuracion en config.json
+- se incorpora disclaimer respecto a temperaturas
+- se agrega capacidades con diferentes temperaturas de acumulacion, consumo y agua fria

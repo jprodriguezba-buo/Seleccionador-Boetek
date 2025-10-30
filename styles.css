@@ -357,3 +357,81 @@ table.falla-re-active .col-falla {
     background-color: #6c757d;
     cursor: not-allowed;
 }
+
+.panel-header {
+    display: flex;
+    justify-content: space-between; /* Coloca los elementos en extremos opuestos */
+    align-items: baseline;        /* Alinea el texto en la base */
+    margin-bottom: 15px;          /* Espacio antes de la tabla */
+    flex-wrap: wrap;              /* Permite que el disclaimer pase abajo en pantallas muy pequeñas */
+    gap: 10px;                    /* Espacio entre título y disclaimer si se envuelven */
+}
+
+.panel-header h3 {
+    margin: 0; /* Elimina el margen por defecto del h3 */
+}
+
+.disclaimer-ashrae {
+    font-size: 11px;
+    color: #6c757d;
+    text-align: right; /* Alinea el texto a la derecha */
+    padding: 0;
+    border: none;
+    background-color: transparent;
+}
+
+.table-footnote {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: -10px; /* Reduce el espacio después de la tabla */
+    text-align: right;
+    font-style: italic;
+}
+.paneles-equipo-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    flex-wrap: wrap; /* Para responsiveness */
+}
+
+/* Cada panel dentro del wrapper tomará el 50% del espacio, menos el gap */
+.paneles-equipo-wrapper > .panel-capacidad,
+.paneles-equipo-wrapper > #instant-flow-container {
+    flex: 1;
+    min-width: 250px; /* Se apilarán si el espacio es muy reducido */
+}
+
+/* Ajustes al panel de caudales que fue movido */
+#instant-flow-container {
+    text-align: left; /* Sobrescribir el text-align: center de info-box-content */
+    padding: 0; /* Sobrescribir el padding */
+}
+
+#instant-flow-container p {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #f0f0f0;
+    margin: 0;
+    font-size: 1em;
+}
+
+#instant-flow-container p span {
+    padding-left: 10px;
+}
+
+/* Ajuste específico para los títulos en la pestaña Equipo Seleccionado */
+.panel-capacidad > h4,
+#instant-flow-container > h4 {
+    margin-top: 0;
+}
+#equipo-seleccionado-table td:last-child,
+#caudales-table td:last-child {
+    text-align: right;
+    white-space: nowrap; /* Evita que el valor y la unidad se separen */
+}
+
+/* Espacio entre el número y la unidad "L/min" */
+#caudales-table span {
+    padding-right: 5px;
+}
