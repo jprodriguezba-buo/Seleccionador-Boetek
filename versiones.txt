@@ -44,4 +44,5 @@
 - se agrega capacidades con diferentes temperaturas de acumulacion, consumo y agua fria
 1.66
 - se modulariza mas la app, se crean calculations.js y dom.js
--
+1.67
+- se crea ui.js y se mejora la modularizacion de la app
